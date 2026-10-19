@@ -1,11 +1,12 @@
 ---
 import Base from "../layouts/Base.astro";
 import Cover from "../components/Cover.astro";
+import Waitlist from "../components/Waitlist.astro";
 import { SITE } from "../lib/site";
 import { posts } from "../content/posts";
 
 const faqs = [
-  { q: "Is FreelanceDesk free?", a: "You can try it free for 7 days if you are a new subscriber. After that it is $1.99 a month, billed by Google Play, and you can cancel any time in Google Play. The invoice and quotation generators on this website are separate and free for your first 2 invoices and 2 quotations." },
+  { q: "Is FreelanceDesk free?", a: "You can try it free for 7 days if you are a new subscriber. After that it is $1.99 a month, billed by Google Play, and you can cancel any time in Google Play. The invoice and quotation generators on this website are separate and free: 2 invoices and 2 quotations every month." },
   { q: "Where is my data stored?", a: "On your phone only. FreelanceDesk has no account system and no cloud. Your clients, invoices and payments never leave your device unless you export or share them yourself." },
   { q: "Does it work offline?", a: "Yes. Everything in the app works without an internet connection. It only needs a connection to confirm your subscription with Google Play now and then." },
   { q: "Can I send professional PDF invoices and quotations?", a: "Yes. Create an invoice or quotation, pick a template, add your logo and signature if you like, and share the PDF straight from your phone. A quotation turns into an invoice in one tap." },
@@ -76,7 +77,7 @@ const latest = [...posts].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 
         <div class="hero-cta">
           <a class="btn btn-white btn-xl" href="/free-invoice-generator/">Create an invoice</a>
           <div class="hero-cta-2">
-            <a class="btn btn-ghost btn-sm" href="/free-quotation-generator/">Create a quotation</a>
+            <a class="as-badge" href="/app-store/" aria-label="Join the App Store waitlist"><svg width="24" height="26" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M16.4 12.7c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.9-3.5.9-.7 0-1.8-.8-3-.8-1.5 0-3 .9-3.8 2.3-1.6 2.8-.4 7 1.2 9.3.8 1.1 1.7 2.4 2.9 2.3 1.2 0 1.6-.7 3-.7s1.8.7 3 .7c1.3 0 2.1-1.1 2.8-2.3.9-1.3 1.2-2.5 1.3-2.6-.1 0-2.5-1-2.5-3.8zM14.2 5.9c.6-.8 1.1-1.8.9-2.9-.9 0-2 .6-2.7 1.4-.6.7-1.1 1.8-1 2.8 1 .1 2.1-.5 2.8-1.3z"/></svg><span><small>COMING SOON TO THE</small><b>App Store</b></span></a>
             <a class="gp" href={SITE.playUrl} rel="noopener"><img src="/google-play-badge.svg" alt="Get it on Google Play" width="217" height="63" /></a>
           </div>
         </div>
@@ -89,7 +90,7 @@ const latest = [...posts].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 
     <div class="wrap">
       <p class="kicker">Free, in your browser</p>
       <h2 class="big">Need a document <em>right now?</em></h2>
-      <p class="lead" style="margin-top:26px">Make a free account and create your first {SITE.freeLimit} invoices and {SITE.freeLimit} quotations here. Want more? The app has no limits.</p>
+      <p class="lead" style="margin-top:26px">Make a free account and create {SITE.freeLimit} invoices and {SITE.freeLimit} quotations here, free every month. Want more? The app has no limits.</p>
       <div class="tools">
         <a class="tool" href="/free-invoice-generator/">
           <h3>Invoice generator</h3>
@@ -212,6 +213,23 @@ const latest = [...posts].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 
           </a>
         ))}
       </div>
+    </div>
+  </section>
+
+  <!-- APP STORE -->
+  <section class="section sec-night as-sec">
+    <div class="wrap as-home">
+      <div>
+        <p class="kicker">Coming next</p>
+        <h2 class="big wide">The App Store <em>is next.</em></h2>
+        <p class="lead" style="margin-top:24px">FreelanceDesk is on Android today. Leave your email and we'll let you know as soon as the App Store version is ready.</p>
+        <div style="margin-top:30px"><Waitlist dark /></div>
+      </div>
+      <a class="as-card" href="/app-store/" aria-label="About the App Store version">
+        <svg width="56" height="56" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M16.4 12.7c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.9-3.5.9-.7 0-1.8-.8-3-.8-1.5 0-3 .9-3.8 2.3-1.6 2.8-.4 7 1.2 9.3.8 1.1 1.7 2.4 2.9 2.3 1.2 0 1.6-.7 3-.7s1.8.7 3 .7c1.3 0 2.1-1.1 2.8-2.3.9-1.3 1.2-2.5 1.3-2.6-.1 0-2.5-1-2.5-3.8zM14.2 5.9c.6-.8 1.1-1.8.9-2.9-.9 0-2 .6-2.7 1.4-.6.7-1.1 1.8-1 2.8 1 .1 2.1-.5 2.8-1.3z"/></svg>
+        <b>Coming soon</b>
+        <span>Join the waitlist →</span>
+      </a>
     </div>
   </section>
 
@@ -424,8 +442,18 @@ const latest = [...posts].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 
   .btn-white { background: #fff; color: #0a1433; box-shadow: 0 14px 34px rgba(0,10,60,.35); }
   .btn-white:hover { background: #fff; color: #0a1433; box-shadow: 0 18px 44px rgba(0,10,60,.5); }
 
+
+  .as-badge { display: inline-flex; align-items: center; gap: 10px; height: 50px; padding: 0 20px 0 14px; border-radius: 9px; background: #000; border: 1px solid #a6a6a6; color: #fff; text-decoration: none; transition: transform .18s ease, border-color .18s ease; }
+  .as-badge:hover { transform: translateY(-2px); border-color: #fff; color: #fff; }
+  .as-badge span { display: grid; line-height: 1.05; } .as-badge small { font-size: .56rem; letter-spacing: .08em; font-weight: 500; color: #e2e2e2; } .as-badge b { font-size: 1.28rem; font-weight: 600; letter-spacing: -.02em; }
+  .as-home { display: grid; grid-template-columns: 1.3fr .7fr; gap: 50px; align-items: center; }
+  .as-card { display: grid; justify-items: center; gap: 8px; padding: 46px 30px; border-radius: 34px; background: #000; border: 1px solid rgba(255,255,255,.3); box-shadow: 0 40px 80px rgba(0,5,40,.5); transform: rotate(3deg); text-align: center; text-decoration: none; transition: transform .25s ease; }
+  .as-card:hover { transform: rotate(0deg) translateY(-4px); }
+  .as-card b { font-size: 1.9rem; font-weight: 600; letter-spacing: -.04em; color: #fff; margin-top: 8px; } .as-card span { color: #aab6d8; }
+
   @media (max-width: 960px) {
-    .tools, .priv, .price-grid, .faq-wrap, .app-grid { grid-template-columns: 1fr; }
+    .tools, .priv, .price-grid, .faq-wrap, .app-grid, .as-home { grid-template-columns: 1fr; }
+    .as-card { transform: none; max-width: 320px; }
     .app-grid { gap: 60px; }
     .guides { grid-template-columns: 1fr; }
     .rows li { grid-template-columns: 50px 1fr; gap: 6px 18px; } .rows li p { grid-column: 2; }
@@ -439,6 +467,6 @@ const latest = [...posts].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 
     .hero .lead { font-size: .98rem; }
     .btn-xl { padding: 15px 34px; font-size: 1.02rem; }
     .hero-cta-2 .btn-sm { padding: 10px 16px; font-size: .86rem; }
-    .gp img { height: 42px; }
+    .gp img { height: 42px; } .as-badge { height: 42px; padding: 0 14px 0 10px; } .as-badge b { font-size: 1.05rem; } .as-badge small { font-size: .5rem; } .as-badge svg { width: 19px; height: 21px; }
   }
 </style>

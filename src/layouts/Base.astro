@@ -11,7 +11,7 @@ interface Props {
   published?: string;
   image?: string;
 }
-const { title, description, type = "website", jsonLd = [], noindex = false, published, image: imagePath = "/logo-mark.png" } = Astro.props;
+const { title, description, type = "website", jsonLd = [], noindex = false, published, image: imagePath = "/og-default.jpg" } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site).toString();
 const image = new URL(imagePath, Astro.site).toString();
 const fullTitle = title.includes(SITE.name) ? title : `${title} | ${SITE.name}`;
@@ -38,7 +38,7 @@ const link = (href: string) => (path === href || path === href + "/" ? "page" : 
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={image} />
     {published && <meta property="article:published_time" content={published} />}
-    <meta name="twitter:card" content={imagePath === "/logo-mark.png" ? "summary" : "summary_large_image"} />
+    <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={fullTitle} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={image} />
@@ -52,11 +52,12 @@ const link = (href: string) => (path === href || path === href + "/" ? "page" : 
   <body>
     <div class="nav-shell">
       <div class="nav">
-        <a class="brand" href="/"><img src="/logo-mark.png" alt="" width="34" height="34" />FreelanceDesk</a>
+        <a class="brand" href="/"><img src="/logo-mark.png" alt="" width="34" height="34" /><span class="wm-t">Freelance<b>Desk</b></span></a>
         <nav class="nav-links" aria-label="Main">
           <a href="/free-invoice-generator/" aria-current={link("/free-invoice-generator")}>Invoice generator</a>
           <a href="/free-quotation-generator/" aria-current={link("/free-quotation-generator")}>Quotation generator</a>
           <a href="/blog/" aria-current={path.startsWith("/blog") ? "page" : undefined}>Blog</a>
+          <a href="/help/" aria-current={path.startsWith("/help") ? "page" : undefined}>Help</a>
           <a href="/free-invoice-generator/#signin" class="signin-link" id="nav-signin">Sign in</a>
           <details class="acct-menu" id="nav-acct" hidden>
             <summary><span class="acct-av" id="nav-av">A</span>Account</summary>
@@ -67,7 +68,7 @@ const link = (href: string) => (path === href || path === href + "/" ? "page" : 
               <button type="button" id="nav-delete" class="danger">Delete my account</button>
             </div>
           </details>
-          <a class="btn btn-primary btn-sm" href={SITE.playUrl} rel="noopener">Get the app</a>
+          <a class="nav-cta" href={SITE.playUrl} rel="noopener">Get the app <span aria-hidden="true">→</span></a>
         </nav>
         <button type="button" class="menu-btn" id="menu-open" aria-label="Open menu" aria-expanded="false" aria-controls="fs-menu">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M4 8h16M4 16h16" /></svg>
@@ -78,7 +79,7 @@ const link = (href: string) => (path === href || path === href + "/" ? "page" : 
 
     <div class="fs-menu" id="fs-menu" hidden role="dialog" aria-modal="true" aria-label="Menu">
       <div class="fs-top">
-        <a class="brand" href="/"><img src="/logo-mark.png" alt="" width="34" height="34" />FreelanceDesk</a>
+        <a class="brand" href="/"><img src="/logo-mark.png" alt="" width="34" height="34" /><span class="wm-t">Freelance<b>Desk</b></span></a>
         <button type="button" class="menu-btn" id="menu-close" aria-label="Close menu">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
         </button>
@@ -87,6 +88,7 @@ const link = (href: string) => (path === href || path === href + "/" ? "page" : 
         <a href="/free-invoice-generator/">Invoice generator</a>
         <a href="/free-quotation-generator/">Quotation generator</a>
         <a href="/blog/">Blog</a>
+        <a href="/help/">Help</a>
         <a href="/free-invoice-generator/#signin" id="m-signin">Sign in</a>
         <button type="button" id="m-signout" class="fs-out" hidden>Sign out</button>
       </nav>
@@ -102,7 +104,7 @@ const link = (href: string) => (path === href || path === href + "/" ? "page" : 
       <div class="wrap">
         <div class="foot-grid">
           <div>
-            <a class="brand foot-brand" href="/"><img src="/logo-mark.png" alt="" width="40" height="40" />FreelanceDesk</a>
+            <a class="brand foot-brand" href="/"><img src="/logo-mark.png" alt="" width="40" height="40" /><span class="wm-t">Freelance<b>Desk</b></span></a>
             <p style="margin-top:16px;max-width:34ch">{SITE.tagline}. Made by {SITE.company}.</p>
           </div>
           <div>
@@ -110,15 +112,19 @@ const link = (href: string) => (path === href || path === href + "/" ? "page" : 
             <a href="/free-invoice-generator/">Invoice generator</a>
             <a href="/free-quotation-generator/">Quotation generator</a>
             <a href="/blog/">Freelance blog</a>
+            <a href="/help/">Help center</a>
           </div>
           <div>
             <h4>The app</h4>
             <a href={SITE.playUrl} rel="noopener">Google Play</a>
+            <a href="/app-store/">App Store waitlist</a>
             <a href="/app-privacy/">App privacy policy</a>
             <a href="/app-terms/">App terms</a>
           </div>
           <div>
             <h4>Website</h4>
+            <a href="/contact/">Contact</a>
+            <a href="/whats-new/">What's new</a>
             <a href="/privacy/">Privacy</a>
             <a href="/terms/">Terms</a>
             <a href={`mailto:${SITE.email}`}>{SITE.email}</a>
@@ -135,6 +141,10 @@ const link = (href: string) => (path === href || path === href + "/" ? "page" : 
       import { supabase } from "../lib/supabase";
 
       const $ = (id: string) => document.getElementById(id) as HTMLElement;
+      const shell = document.querySelector(".nav-shell") as HTMLElement;
+      const onScroll = () => shell.classList.toggle("scrolled", window.scrollY > 12);
+      onScroll(); window.addEventListener("scroll", onScroll, { passive: true });
+
       const fs = $("fs-menu");
       const setMenu = (open: boolean) => {
         fs.hidden = !open;
@@ -155,7 +165,7 @@ const link = (href: string) => (path === href || path === href + "/" ? "page" : 
         if (error || !data) return "";
         const lim = Number(data.limit) || 2;
         const inv = Math.max(0, lim - Number(data.invoice || 0)), quo = Math.max(0, lim - Number(data.quotation || 0));
-        return `Free left: ${inv} of ${lim} invoices, ${quo} of ${lim} quotations`;
+        return `Free this month: ${inv} of ${lim} invoices, ${quo} of ${lim} quotations`;
       }
       async function render(session: any) {
         const on = !!session;

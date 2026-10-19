@@ -1,0 +1,47 @@
+---
+import Base from "../layouts/Base.astro";
+import { releases } from "../content/changelog";
+import { SITE } from "../lib/site";
+---
+<Base title="What's new in FreelanceDesk" description="Release notes for the FreelanceDesk app: new templates, fixes and improvements in every update.">
+  <section class="wn-hero">
+    <div class="wrap">
+      <p class="kicker">Release notes</p>
+      <h1>What's <em>new.</em></h1>
+      <p class="lead">Every update to the FreelanceDesk app, newest first.</p>
+    </div>
+  </section>
+  <section class="section sec-light wn-body">
+    <div class="wrap wn-wrap">
+      {releases.map((r) => (
+        <article class="wn-item">
+          <div class="wn-meta"><span class="wn-ver">{r.version}</span><span>{r.date}</span></div>
+          <div>
+            <h2>{r.title}</h2>
+            <ul>{r.items.map((i) => <li>{i}</li>)}</ul>
+          </div>
+        </article>
+      ))}
+      <div class="hc-more">
+        <p>Get the latest version on Google Play.</p>
+        <a class="gp" href={SITE.playUrl} rel="noopener"><img src="/google-play-badge.svg" alt="Get it on Google Play" width="217" height="63" /></a>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style is:global>
+  .wn-hero { margin-top: -80px; padding: clamp(130px, 12vw, 170px) 0 clamp(50px, 6vw, 80px); background: linear-gradient(120deg, #0a2cb0 0%, #1654e6 45%, #2f84ff 100%); }
+  .wn-hero h1 { margin: 18px 0 20px; font-size: clamp(3rem, 8vw, 7rem); }
+  .wn-hero .kicker { color: #d6e6ff; } .wn-hero .lead { color: #e4eeff; }
+  .wn-wrap { max-width: 920px; }
+  .wn-item { display: grid; grid-template-columns: 170px 1fr; gap: 30px; padding: 40px 0; border-bottom: 1px solid var(--line); }
+  .wn-meta { display: grid; gap: 6px; align-content: start; color: #5b6786; font-size: .95rem; }
+  .wn-ver { font-size: 2.2rem; font-weight: 500; letter-spacing: -.05em; color: #0a1433; }
+  .wn-item h2 { font-size: clamp(1.7rem, 3vw, 2.4rem); letter-spacing: -.04em; line-height: 1.1; margin-bottom: 16px; }
+  .wn-item ul { margin: 0; padding-left: 1.2em; display: grid; gap: 8px; color: #3f4c6e; }
+  .wn-item li::marker { color: #1d5be0; }
+  .hc-more { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; padding: 28px 30px; border-radius: 24px; background: #0a1d6a; color: #fff; margin-top: 40px; }
+  .hc-more p { font-size: 1.3rem; font-weight: 500; letter-spacing: -.03em; }
+  @media (max-width: 640px) { .wn-item { grid-template-columns: 1fr; gap: 12px; } }
+</style>

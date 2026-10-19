@@ -3,6 +3,8 @@ import Base from "../../layouts/Base.astro";
 import Cover from "../../components/Cover.astro";
 import { posts, withToc, type Post } from "../../content/posts";
 import { SITE } from "../../lib/site";
+import fs from "node:fs";
+import path from "node:path";
 
 export function getStaticPaths() {
   return posts.map((post) => ({ params: { slug: post.slug }, props: { post } }));
@@ -15,6 +17,8 @@ const fmt = (iso: string) => new Date(iso + "T00:00:00").toLocaleDateString("en-
 const others = posts.filter((p) => p.slug !== post.slug);
 const more = [...others.filter((p) => p.category === post.category), ...others.filter((p) => p.category !== post.category)].slice(0, 3);
 const url = `${SITE.url}/blog/${post.slug}/`;
+const ext = ["jpg", "jpeg", "png", "webp"].find((e) => fs.existsSync(path.join(process.cwd(), "public", "blog", `${post.slug}.${e}`)));
+const ogImage = ext ? `/blog/${post.slug}.${ext}` : undefined;
 const { body, toc } = withToc(post.body);
 
 const jsonLd = [
@@ -22,6 +26,7 @@ const jsonLd = [
     "@context": "https://schema.org", "@type": "BlogPosting",
     headline: post.title, description: post.description, datePublished: post.date, dateModified: post.date,
     mainEntityOfPage: url, articleSection: post.category,
+    ...(ogImage ? { image: SITE.url + ogImage } : {}),
     author: { "@type": "Organization", name: SITE.company },
     publisher: { "@type": "Organization", name: SITE.company, logo: { "@type": "ImageObject", url: SITE.url + "/logo-mark.png" } },
   },
@@ -35,7 +40,7 @@ const jsonLd = [
   },
 ];
 ---
-<Base title={post.title} description={post.description} type="article" published={post.date} jsonLd={jsonLd}>
+<Base title={post.title} description={post.description} type="article" published={post.date} jsonLd={jsonLd} image={ogImage}>
   <article>
     <header class="post-head">
       <div class="wrap">

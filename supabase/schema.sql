@@ -7,6 +7,8 @@
 --    so clearing the browser or editing the page cannot reset it.
 --  * Lets a signed-in user delete their own account and every row tied to it.
 --
+-- The free allowance is MONTHLY: it counts documents downloaded since the start of the current
+-- calendar month (UTC) and starts again on the 1st.
 -- To change the free limit, edit the number 2 in the two functions below and run again.
 
 create table if not exists public.doc_usage (
@@ -35,8 +37,9 @@ set search_path = public
 as $$
   select jsonb_build_object(
     'limit', 2,
-    'invoice',   (select count(*) from public.doc_usage where user_id = auth.uid() and kind = 'invoice'),
-    'quotation', (select count(*) from public.doc_usage where user_id = auth.uid() and kind = 'quotation'),
+    'invoice',   (select count(*) from public.doc_usage where user_id = auth.uid() and kind = 'invoice'   and created_at >= date_trunc('month', now())),
+    'quotation', (select count(*) from public.doc_usage where user_id = auth.uid() and kind = 'quotation' and created_at >= date_trunc('month', now())),
+    'resets_at', date_trunc('month', now()) + interval '1 month',
     'verified',  coalesce((select email_confirmed_at is not null from auth.users where id = auth.uid()), false)
   );
 $$;
@@ -71,9 +74,11 @@ begin
   -- Serialise requests from the same user so two quick clicks can't both pass.
   perform pg_advisory_xact_lock(hashtext(uid::text));
 
-  select count(*) into used from public.doc_usage where user_id = uid and kind = p_kind;
+  select count(*) into used from public.doc_usage
+    where user_id = uid and kind = p_kind and created_at >= date_trunc('month', now());
   if used >= lim then
-    return jsonb_build_object('allowed', false, 'reason', 'limit', 'used', used, 'limit', lim);
+    return jsonb_build_object('allowed', false, 'reason', 'limit', 'used', used, 'limit', lim,
+                              'resets_at', date_trunc('month', now()) + interval '1 month');
   end if;
 
   insert into public.doc_usage (user_id, kind) values (uid, p_kind);

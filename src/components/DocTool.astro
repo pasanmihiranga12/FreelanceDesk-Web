@@ -10,7 +10,7 @@ const noun = isInvoice ? "invoice" : "quotation";
 <div id="doctool" class="dt" data-kind={kind} data-limit={SITE.freeLimit} data-play={SITE.playUrl}>
   <div class="dt-acct" id="dt-acct">
     <div id="dt-acct-out" class="dt-acct-row">
-      <span>Fill in the form below, then sign in to download your PDF. It's free for your first {SITE.freeLimit} {noun}s.</span>
+      <span>Fill in the form below, then sign in to download your PDF. You get {SITE.freeLimit} free {noun}s every month.</span>
       <span class="dt-btns">
         <button type="button" class="btn btn-ghost btn-sm" data-open-auth="signin">Sign in</button>
         <button type="button" class="btn btn-blue btn-sm" data-open-auth="signup">Create free account</button>
@@ -120,7 +120,7 @@ const noun = isInvoice ? "invoice" : "quotation";
       <div class="dt-tpls" id="dt-tpls" role="radiogroup" aria-label="Template"></div>
       <div class="dt-paper" id="dt-preview" aria-label="Live preview"></div>
       <button type="button" id="dt-download" class="btn btn-primary dt-download">Download PDF</button>
-      <p class="dt-hint" id="dt-hint">A free account is needed to download. It takes a minute, and your first {SITE.freeLimit} {noun}s are free.</p>
+      <p class="dt-hint" id="dt-hint">A free account is needed to download. It takes a minute, and you get {SITE.freeLimit} free {noun}s every month.</p>
       <p class="dt-msg" id="dt-msg" role="status" aria-live="polite"></p>
     </aside>
   </div>
@@ -135,7 +135,7 @@ const noun = isInvoice ? "invoice" : "quotation";
 
     <form id="dt-signup" class="dt-authform" data-for="signup">
       <h3>Create your free account</h3>
-      <p>Your first {SITE.freeLimit} invoices and {SITE.freeLimit} quotations are free. We only use your email to verify your account and count your free documents.</p>
+      <p>You get {SITE.freeLimit} free invoices and {SITE.freeLimit} free quotations every month. We only use your email to verify your account and count your free documents.</p>
       <label>Email<input name="email" type="email" required autocomplete="email" /></label>
       <label>Password <span class="dt-opt">at least 8 characters</span><input name="password" type="password" minlength="8" required autocomplete="new-password" /></label>
       <button class="btn btn-blue" type="submit">Create account</button>
@@ -174,7 +174,7 @@ const noun = isInvoice ? "invoice" : "quotation";
   <dialog id="dt-limit" class="dt-dialog">
     <button type="button" class="dt-x" data-close aria-label="Close">×</button>
     <div class="dt-authform">
-      <h3>You've used your {SITE.freeLimit} free {noun}s</h3>
+      <h3>You've used your {SITE.freeLimit} free {noun}s this month</h3>
       <p>That's the free limit on the website. The FreelanceDesk app has no limits: unlimited invoices and quotations, clients, payments and income analytics, all private on your phone.</p>
       <a class="btn btn-primary" href={SITE.playUrl} rel="noopener">Get the app on Google Play</a>
       <button type="button" class="dt-link" data-close>Maybe later</button>
@@ -394,7 +394,7 @@ const noun = isInvoice ? "invoice" : "quotation";
       $("dt-usage").textContent = usage ? `${leftNow()} of ${LIMIT} free ${noun}s left` : "";
     }
     const btn = $<HTMLButtonElement>("dt-download");
-    btn.textContent = session ? `Download PDF${usage ? ` (${leftNow()} free left)` : ""}` : "Download PDF";
+    btn.textContent = session ? `Download PDF${usage ? ` (${leftNow()} free left this month)` : ""}` : "Download PDF";
   }
   async function loadUsage() {
     if (!supabase || !session) return;
@@ -545,7 +545,7 @@ const noun = isInvoice ? "invoice" : "quotation";
       }
       pdf.save(`${(d.number || noun).replace(/[^\w.-]+/g, "_")}.pdf`);
       await loadUsage();
-      setMsg(`Downloaded. You have ${leftNow()} free ${noun}${leftNow() === 1 ? "" : "s"} left.`, "ok");
+      setMsg(`Downloaded. You have ${leftNow()} free ${noun}${leftNow() === 1 ? "" : "s"} left this month.`, "ok");
     } catch {
       setMsg("Something went wrong. Please try again.", "err");
     } finally {

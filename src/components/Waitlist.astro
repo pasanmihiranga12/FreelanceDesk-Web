@@ -1,0 +1,51 @@
+---
+interface Props { id?: string; dark?: boolean }
+const { id = "wl", dark = false } = Astro.props;
+---
+<div class={`wl-box${dark ? " dark" : ""}`}>
+  <form class="wl-form" data-wl novalidate autocomplete="on">
+    <input type="email" name="email" placeholder="Your email address" autocomplete="email" required aria-label="Your email address" />
+    <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" class="wl-hp" />
+    <button type="submit" class="btn btn-primary">Notify me</button>
+  </form>
+  <p class="wl-msg" data-wl-msg role="status" aria-live="polite"></p>
+  <p class="wl-note">We'll email you when the App Store version is ready. <a href="/privacy/">Privacy</a></p>
+</div>
+
+<script>
+  import { supabase } from "../lib/supabase";
+  const say = (el: HTMLElement | null, t: string, tone: "ok" | "err" | "" = "") => { if (el) { el.textContent = t; el.dataset.tone = tone; } };
+  document.querySelectorAll<HTMLFormElement>("form[data-wl]").forEach((form) => {
+    const box = form.closest(".wl-box") as HTMLElement;
+    const msg = box.querySelector("[data-wl-msg]") as HTMLElement | null;
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const f = new FormData(form);
+      if (String(f.get("website") || "")) { say(msg, "You're on the list. Thank you!", "ok"); return; }   // bots fill the hidden field
+      const email = String(f.get("email") || "").trim();
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { say(msg, "Please enter a valid email address.", "err"); return; }
+      if (!supabase) { say(msg, "The waitlist isn't connected yet. Please try again later.", "err"); return; }
+      const btn = form.querySelector("button[type=submit]") as HTMLButtonElement;
+      btn.disabled = true; say(msg, "Adding you…");
+      const { data, error } = await supabase.rpc("join_waitlist", { p_email: email, p_platform: "ios" });
+      btn.disabled = false;
+      if (error || data === "busy") { say(msg, "Something went wrong. Please try again in a minute.", "err"); return; }
+      if (data === "invalid") { say(msg, "Please enter a valid email address.", "err"); return; }
+      form.reset();
+      say(msg, "You're on the list. We'll email you when the App Store version is ready.", "ok");
+    });
+  });
+</script>
+
+<style is:global>
+  .wl-box { max-width: 520px; }
+  .wl-form { display: flex; gap: 10px; flex-wrap: wrap; }
+  .wl-form input[type=email] { flex: 1 1 240px; min-width: 0; font: inherit; font-size: 1.02rem; color: #0a1433; background: #fff; border: 2px solid transparent; border-radius: 14px; padding: 16px 20px; }
+  .wl-form input[type=email]:focus { outline: none; border-color: #ffd05a; }
+  .wl-form .btn { border-radius: 14px; padding: 16px 28px; }
+  .wl-hp { position: absolute !important; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+  .wl-msg { min-height: 1.4em; margin-top: 12px; font-size: .95rem; color: #fff; }
+  .wl-msg[data-tone="ok"] { color: #8ff0c8; } .wl-msg[data-tone="err"] { color: #ffb3bd; }
+  .wl-note { margin-top: 4px; font-size: .84rem; color: rgba(255,255,255,.72); }
+  .wl-note a { color: #fff; }
+</style>
