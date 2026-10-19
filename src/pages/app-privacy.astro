@@ -1,0 +1,12 @@
+---
+import LegalDoc from "../components/LegalDoc.astro";
+import legal from "../content/app-legal.json";
+---
+<LegalDoc
+  title="App Privacy Policy"
+  description="How the FreelanceDesk mobile app handles your data: everything stays on your phone, with no accounts, ads or analytics."
+  text={legal.privacy}
+  effective={legal.effective}
+  email={legal.email}
+  note="This policy is for the FreelanceDesk mobile app. The website has its own policy at /privacy/."
+/>

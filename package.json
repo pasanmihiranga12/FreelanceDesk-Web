@@ -1,0 +1,17 @@
+{
+  "name": "freelancedesk-website",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.7.4",
+    "@supabase/supabase-js": "^2.118.0",
+    "astro": "^7.4.0",
+    "jspdf": "^4.2.1"
+  }
+}

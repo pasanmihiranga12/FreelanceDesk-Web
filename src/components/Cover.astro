@@ -1,0 +1,17 @@
+---
+// Blog thumbnail. Shows /blog/<slug>.(jpg|jpeg|png|webp) from /public if you add one,
+// otherwise a plain placeholder box.
+import fs from "node:fs";
+import path from "node:path";
+interface Props { slug: string }
+const { slug } = Astro.props;
+const ext = ["jpg", "jpeg", "png", "webp"].find((e) => fs.existsSync(path.join(process.cwd(), "public", "blog", `${slug}.${e}`)));
+const src = ext ? `/blog/${slug}.${ext}` : null;
+---
+{src
+  ? <img class="thumb" src={src} alt="" loading="lazy" />
+  : <div class="thumb ph"><span>Thumbnail</span></div>}
+<style>
+  .thumb { display: block; width: 100%; height: 100%; object-fit: cover; }
+  .ph { display: grid; place-items: center; background: #0d1530; color: var(--muted); font-size: .9rem; border-bottom: 1px solid var(--line-soft); }
+</style>

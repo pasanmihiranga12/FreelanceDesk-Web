@@ -1,0 +1,12 @@
+---
+import LegalDoc from "../components/LegalDoc.astro";
+import legal from "../content/app-legal.json";
+---
+<LegalDoc
+  title="App Terms of Service"
+  description="The terms for using the FreelanceDesk mobile app, including the subscription, free trial and your data."
+  text={legal.terms}
+  effective={legal.effective}
+  email={legal.email}
+  note="These terms are for the FreelanceDesk mobile app. The website has its own terms at /terms/."
+/>

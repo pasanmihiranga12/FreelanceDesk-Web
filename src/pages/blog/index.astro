@@ -1,0 +1,124 @@
+---
+import Base from "../../layouts/Base.astro";
+import Cover from "../../components/Cover.astro";
+import { posts } from "../../content/posts";
+import { SITE } from "../../lib/site";
+
+const sorted = [...posts].sort((a, b) => b.date.localeCompare(a.date));
+const [featured, ...rest] = sorted;
+const cats = ["All", ...Array.from(new Set(sorted.map((p) => p.category)))];
+const haystack = (p: (typeof sorted)[number]) => `${p.title} ${p.description} ${p.category}`.toLowerCase();
+const fmt = (iso: string) => new Date(iso + "T00:00:00").toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+const jsonLd = [{
+  "@context": "https://schema.org", "@type": "Blog", name: "FreelanceDesk blog", url: SITE.url + "/blog/",
+  blogPost: sorted.map((p) => ({ "@type": "BlogPosting", headline: p.title, url: `${SITE.url}/blog/${p.slug}/`, datePublished: p.date })),
+}];
+---
+<Base title="Freelance blog: invoices, quotes and getting paid" description="Practical, in-depth blog for freelancers on writing invoices and quotations, pricing your work, chasing late payments and setting aside money for tax." jsonLd={jsonLd}>
+  <section class="blog-hero">
+    <div class="wrap">
+      <span class="kicker">The blog</span>
+      <h1>Get paid for the work you <em>already do.</em></h1>
+      <p class="lead">Plain-language blog on invoices, quotations, pricing and getting paid. Written for freelancers, not accountants.</p>
+    </div>
+  </section>
+
+  <div class="blog-body">
+  <section class="wrap toolbar">
+    <label class="search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      <input id="bq" type="search" placeholder="Search the blog, e.g. late payment, quote, tax" autocomplete="off" /></label>
+    <div class="chips" id="bchips">{cats.map((c, i) => <button type="button" class={`chip${i === 0 ? " on" : ""}`} data-cat={c}>{c}</button>)}</div>
+    <p class="count" id="bcount" aria-live="polite"></p>
+  </section>
+
+  <section class="wrap" id="featwrap" style="padding-bottom:30px">
+    <a class="feat" href={`/blog/${featured.slug}/`}>
+      <div class="feat-img"><Cover slug={featured.slug} /></div>
+      <div class="feat-body">
+        <span class="eyebrow">{featured.category} · Latest</span>
+        <h2>{featured.title}</h2>
+        <p>{featured.description}</p>
+        <span class="meta">{fmt(featured.date)} · {featured.minutes} min read</span>
+      </div>
+    </a>
+  </section>
+
+  <section class="wrap" style="padding-bottom:0">
+    <div class="pgrid" id="bgrid">
+      {sorted.map((p, i) => (
+        <a class={`pcard${i === 0 ? " dup" : ""}`} href={`/blog/${p.slug}/`} data-cat={p.category} data-text={haystack(p)}>
+          <div class="pimg"><Cover slug={p.slug} /></div>
+          <div class="pbody">
+            <span class="eyebrow">{p.category}</span>
+            <h3>{p.title}</h3>
+            <p>{p.description}</p>
+            <span class="meta">{p.minutes} min read</span>
+          </div>
+        </a>
+      ))}
+    </div>
+    <p class="empty" id="bempty" hidden>No posts match that. Try a different word or pick "All".</p>
+  </section>
+  </div>
+</Base>
+
+<script>
+  const q = document.getElementById("bq") as HTMLInputElement;
+  const chips = Array.from(document.querySelectorAll<HTMLButtonElement>("#bchips .chip"));
+  const cards = Array.from(document.querySelectorAll<HTMLElement>("#bgrid .pcard"));
+  const feat = document.getElementById("featwrap") as HTMLElement;
+  const count = document.getElementById("bcount") as HTMLElement;
+  const empty = document.getElementById("bempty") as HTMLElement;
+  let cat = "All";
+  function apply() {
+    const term = q.value.trim().toLowerCase();
+    const filtering = term !== "" || cat !== "All";
+    feat.hidden = filtering;
+    let shown = 0;
+    cards.forEach((c) => {
+      const isDup = c.classList.contains("dup");
+      const okCat = cat === "All" || c.dataset.cat === cat;
+      const okTxt = !term || (c.dataset.text || "").includes(term);
+      const show = (filtering ? okCat && okTxt : !isDup);
+      c.hidden = !show;
+      if (show) shown++;
+    });
+    empty.hidden = !filtering || shown > 0;
+    count.textContent = filtering ? `${shown} ${shown === 1 ? "post" : "posts"} found` : "";
+  }
+  q.addEventListener("input", apply);
+  chips.forEach((b) => b.addEventListener("click", () => {
+    cat = b.dataset.cat || "All";
+    chips.forEach((x) => x.classList.toggle("on", x === b));
+    apply();
+  }));
+  apply();
+</script>
+
+<style is:global>
+  .blog-hero { position: relative; margin-top: -80px; padding-block: clamp(130px, 12vw, 170px) clamp(50px, 6vw, 80px); background: linear-gradient(120deg, #0a2cb0 0%, #1654e6 45%, #2f84ff 100%); }
+  .blog-hero h1 { margin: 18px 0 20px; max-width: 14ch; font-size: clamp(3rem, 8vw, 7rem); }
+  .meta { color: var(--muted); font-size: .88rem; font-weight: 500; }
+  .feat { display: grid; grid-template-columns: 1.25fr 1fr; gap: 0; border-radius: 34px; overflow: hidden; text-decoration: none; color: inherit; background: #08122e; border: 1px solid rgba(127,178,255,.28); box-shadow: 0 24px 50px rgba(2,8,40,.35); transition: border-color .2s ease, transform .2s ease; }
+  .feat:hover { border-color: rgba(233,180,76,.45); transform: translateY(-3px); }
+  .feat-img { min-height: 340px; overflow: hidden; } .feat-img svg { transition: transform .6s ease; } .feat:hover .feat-img svg { transform: scale(1.04); }
+  .feat-body { padding: clamp(26px, 4vw, 52px); display: grid; align-content: center; gap: 16px; }
+  .feat-body h2 { font-size: clamp(2rem, 3.6vw, 3.1rem); line-height: 1.02; }
+  .feat-body p { color: var(--soft); }
+  .pgrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; margin-top: 26px; }
+  @media (max-width: 960px) { .pgrid { grid-template-columns: 1fr 1fr; } .feat { grid-template-columns: 1fr; } .feat-img { min-height: 0; aspect-ratio: 16/9; } }
+  @media (max-width: 620px) { .pgrid { grid-template-columns: 1fr; } }
+  .blog-body { padding: 56px 0 clamp(70px, 9vw, 120px); background: linear-gradient(180deg, #0a2a8a 0%, #1654e6 45%, #0a2a8a 100%); } .blog-body .pgrid { margin-top: 26px; }
+  .toolbar { padding-block: 0 26px; display: grid; gap: 16px; }
+  .search { display: flex; align-items: center; gap: 12px; background: #fff; color: #5b6786; border-radius: 999px; padding: 0 22px; box-shadow: 0 14px 34px rgba(2,8,60,.3); }
+  .search input { flex: 1; border: 0; outline: 0; background: none; font: inherit; font-size: 1.02rem; color: #0a1433; padding: 17px 0; min-width: 0; }
+  .search input::placeholder { color: #8b96b3; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { border: 1px solid rgba(255,255,255,.3); background: rgba(8,18,60,.55); color: #fff; font: inherit; font-size: .9rem; font-weight: 500; padding: 9px 18px; border-radius: 999px; cursor: pointer; }
+  .chip:hover { background: rgba(255,255,255,.14); }
+  .chip.on { background: #fff; color: #0a1433; border-color: #fff; }
+  .count { color: #dbe7ff; font-size: .92rem; min-height: 1.3em; }
+  .empty { color: #fff; text-align: center; padding: 40px 0; font-size: 1.05rem; }
+  [hidden] { display: none !important; }
+  @media (max-width: 620px) { .chips { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 6px; margin-inline: -22px; padding-inline: 22px; scrollbar-width: none; } .chips::-webkit-scrollbar { display: none; } .chip { white-space: nowrap; flex: none; } }
+</style>

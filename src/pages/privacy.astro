@@ -1,0 +1,63 @@
+---
+import Base from "../layouts/Base.astro";
+import { SITE } from "../lib/site";
+---
+<Base title="Privacy Policy" description="How the FreelanceDesk website handles your data: what we collect for accounts and the free tools, and what we never collect.">
+  <section class="section" style="padding-top:56px">
+    <div class="wrap">
+      <div class="prose">
+        <span class="eyebrow">Legal</span>
+        <h1 style="font-size:clamp(2rem,5vw,3rem);margin:10px 0 6px">Privacy Policy</h1>
+        <p style="color:var(--muted)">Website and free tools · Updated {SITE.updated}</p>
+
+        <p>This policy covers the FreelanceDesk <strong>website</strong> at {SITE.url.replace("https://", "")}, published by {SITE.company} ("we", "us"). The FreelanceDesk <strong>mobile app</strong> is separate: it has no accounts, stores your data only on your phone, and has its own Privacy Policy, shown inside the app (Settings → Privacy &amp; Terms) and at <a href="/app-privacy/">/app-privacy/</a>.</p>
+
+        <h2>1. Just browsing</h2>
+        <p>We do not run advertising or analytics trackers on this website. Like any website, our hosting provider may keep standard technical logs (such as IP address and page requests) to keep the service running and secure.</p>
+
+        <h2>2. The free invoice and quotation tools</h2>
+        <p>The document you type is built <strong>in your browser</strong> and is not sent to us. To save you retyping, the form is stored in your browser's local storage on your device. You can clear it any time by clearing this site's data in your browser.</p>
+
+        <h2>3. Your account</h2>
+        <p>To download a PDF you create an account. We store:</p>
+        <ul>
+          <li>your <strong>email address</strong>;</li>
+          <li>your <strong>password</strong>, held by our authentication provider in hashed form. We never see or store your plain-text password;</li>
+          <li>whether your email is verified; and</li>
+          <li>how many free invoices and quotations you have downloaded, with the time of each.</li>
+        </ul>
+        <p>We do not store the contents of your invoices or quotations.</p>
+
+        <h2>4. How we use it</h2>
+        <ul>
+          <li>to create and secure your account;</li>
+          <li>to count your free documents and apply the free limit;</li>
+          <li>to send account emails such as verification and password reset; and</li>
+          <li>to prevent abuse of the free tools.</li>
+        </ul>
+        <p>We do not sell your data and we do not use it for advertising.</p>
+
+        <h2>5. Service providers</h2>
+        <p>We use trusted providers to run the site: a hosting provider, an authentication and database provider (Supabase), and an email delivery provider. They process data only to provide those services to us. Your data may be processed in countries other than your own.</p>
+
+        <h2>6. Cookies and local storage</h2>
+        <p>We use your browser's storage only for your sign-in session and to remember your form. We do not use advertising cookies.</p>
+
+        <h2>7. How long we keep it</h2>
+        <p>We keep your account data until you delete your account. You can delete it yourself from the Account menu on a tool page, which removes your account and your usage record. You can also email us and we will do it for you.</p>
+
+        <h2>8. Your rights</h2>
+        <p>You can ask to see, correct or delete the data we hold about you. Email us at the address below. Depending on where you live, you may have further rights under your local data protection law.</p>
+
+        <h2>9. Children</h2>
+        <p>The website and tools are for business use and are not directed at children under 16. We do not knowingly collect data from them.</p>
+
+        <h2>10. Changes</h2>
+        <p>If we change this policy we will update the date above.</p>
+
+        <h2>11. Contact</h2>
+        <p>Questions or requests: <a href={`mailto:${SITE.email}`}>{SITE.email}</a></p>
+      </div>
+    </div>
+  </section>
+</Base>

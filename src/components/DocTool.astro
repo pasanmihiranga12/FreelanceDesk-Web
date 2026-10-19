@@ -1,0 +1,712 @@
+---
+import { SITE } from "../lib/site";
+import { CURRENCIES } from "../lib/pdf";
+
+interface Props { kind: "invoice" | "quotation" }
+const { kind } = Astro.props;
+const isInvoice = kind === "invoice";
+const noun = isInvoice ? "invoice" : "quotation";
+---
+<div id="doctool" class="dt" data-kind={kind} data-limit={SITE.freeLimit} data-play={SITE.playUrl}>
+  <div class="dt-acct" id="dt-acct">
+    <div id="dt-acct-out" class="dt-acct-row">
+      <span>Fill in the form below, then sign in to download your PDF. It's free for your first {SITE.freeLimit} {noun}s.</span>
+      <span class="dt-btns">
+        <button type="button" class="btn btn-ghost btn-sm" data-open-auth="signin">Sign in</button>
+        <button type="button" class="btn btn-blue btn-sm" data-open-auth="signup">Create free account</button>
+      </span>
+    </div>
+    <div id="dt-acct-in" class="dt-acct-row" hidden>
+      <span>Signed in as <b id="dt-email"></b> <span class="dt-chip" id="dt-usage"></span></span>
+      <details class="dt-menu">
+        <summary class="btn btn-ghost btn-sm">Account</summary>
+        <div class="dt-menu-panel">
+          <button type="button" id="dt-signout">Sign out</button>
+          <button type="button" id="dt-delete" class="danger">Delete my account</button>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <p class="dt-notice" id="dt-notice" hidden>Accounts aren't connected on this site yet, so downloads are switched off for now.</p>
+
+  <div class="dt-grid">
+    <form id="dt-form" class="dt-form" autocomplete="off" novalidate>
+      <fieldset>
+        <legend>Your details</legend>
+        <label>Business or your name<input name="fromName" type="text" placeholder="e.g. Alex Rivera Studio" /></label>
+        <div class="dt-two">
+          <label>Email<input name="fromEmail" type="email" placeholder="you@example.com" /></label>
+          <label>Phone<input name="fromPhone" type="tel" placeholder="+94 77 123 4567" /></label>
+        </div>
+        <label>Address<textarea name="fromAddress" rows="2" placeholder="Street, city, country"></textarea></label>
+        <label>Tax / VAT ID <span class="dt-opt">optional</span><input name="fromTax" type="text" placeholder="e.g. VAT 123456789" /></label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Your brand</legend>
+        <div class="dt-brand">
+          <div class="dt-logo-box">
+            <img id="dt-logo-prev" alt="" hidden />
+            <span id="dt-logo-empty">No logo</span>
+          </div>
+          <div class="dt-logo-actions">
+            <label class="btn btn-ghost btn-sm dt-file">Upload logo<input id="dt-logo" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" hidden /></label>
+            <button type="button" id="dt-logo-clear" class="btn btn-ghost btn-sm" hidden>Remove</button>
+          </div>
+        </div>
+        <div class="dt-colors">
+          <span>Accent colour</span>
+          <div class="dt-swatches" id="dt-swatches">
+            <button type="button" data-c="" class="sw-auto" title="Template default" aria-label="Template default colour">Auto</button>
+            <button type="button" data-c="#1d5be0" style="--c:#1d5be0" aria-label="Blue"></button>
+            <button type="button" data-c="#14213d" style="--c:#14213d" aria-label="Navy"></button>
+            <button type="button" data-c="#b08d57" style="--c:#b08d57" aria-label="Gold"></button>
+            <button type="button" data-c="#0f9d75" style="--c:#0f9d75" aria-label="Green"></button>
+            <button type="button" data-c="#d6455d" style="--c:#d6455d" aria-label="Red"></button>
+            <button type="button" data-c="#7c4dff" style="--c:#7c4dff" aria-label="Violet"></button>
+            <button type="button" data-c="#111111" style="--c:#111111" aria-label="Black"></button>
+            <input type="color" id="dt-accent" value="#1d5be0" aria-label="Pick any colour" />
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>{isInvoice ? "Bill to" : "Prepared for"}</legend>
+        <label>Client name<input name="toName" type="text" placeholder="e.g. Northwind Co." /></label>
+        <div class="dt-two">
+          <label>Client email <span class="dt-opt">optional</span><input name="toEmail" type="email" placeholder="billing@client.com" /></label>
+          <label>Client address <span class="dt-opt">optional</span><input name="toAddress" type="text" placeholder="City, country" /></label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>{isInvoice ? "Invoice" : "Quotation"} details</legend>
+        <div class="dt-two">
+          <label>{isInvoice ? "Invoice" : "Quotation"} number<input name="number" type="text" value={isInvoice ? "INV-001" : "QUO-001"} /></label>
+          <label>Currency
+            <select name="currency">
+              {CURRENCIES.map((c) => <option value={c.code}>{c.code} · {c.label}</option>)}
+            </select>
+          </label>
+        </div>
+        <div class="dt-two">
+          <label>{isInvoice ? "Invoice" : "Quotation"} date<input name="date" type="date" /></label>
+          <label>{isInvoice ? "Due date" : "Valid until"}<input name="due" type="date" /></label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Items</legend>
+        <div class="dt-items-head"><span>Description</span><span>Qty</span><span>Rate</span><span>Amount</span><span></span></div>
+        <div id="dt-items"></div>
+        <button type="button" id="dt-add" class="btn btn-ghost btn-sm">+ Add item</button>
+      </fieldset>
+
+      <fieldset>
+        <legend>Totals</legend>
+        <div class="dt-two">
+          <label>Discount <span class="dt-opt">amount</span><input name="discount" type="number" min="0" step="any" inputmode="decimal" value="0" /></label>
+          <label>Tax rate <span class="dt-opt">%</span><input name="taxRate" type="number" min="0" max="100" step="any" inputmode="decimal" value="0" /></label>
+        </div>
+        {isInvoice && <label>Payment details <span class="dt-opt">optional</span><textarea name="payment" rows="3" placeholder="Bank name, account number, SWIFT, PayPal..."></textarea></label>}
+        <label>{isInvoice ? "Notes" : "Notes and terms"} <span class="dt-opt">optional</span><textarea name="notes" rows="3" placeholder={isInvoice ? "Thank you for your business." : "e.g. 50% upfront, balance on delivery."}></textarea></label>
+      </fieldset>
+
+      <p class="dt-small">Your details are saved only in this browser so you don't retype them. The PDF is made on your device and is never uploaded.</p>
+    </form>
+
+    <aside class="dt-side">
+      <div class="dt-tpls" id="dt-tpls" role="radiogroup" aria-label="Template"></div>
+      <div class="dt-paper" id="dt-preview" aria-label="Live preview"></div>
+      <button type="button" id="dt-download" class="btn btn-primary dt-download">Download PDF</button>
+      <p class="dt-hint" id="dt-hint">A free account is needed to download. It takes a minute, and your first {SITE.freeLimit} {noun}s are free.</p>
+      <p class="dt-msg" id="dt-msg" role="status" aria-live="polite"></p>
+    </aside>
+  </div>
+
+  <!-- Sign in / create account -->
+  <dialog id="dt-auth" class="dt-dialog">
+    <button type="button" class="dt-x" data-close aria-label="Close">×</button>
+    <div class="dt-tabs" role="tablist">
+      <button type="button" role="tab" data-tab="signup" aria-selected="true">Create account</button>
+      <button type="button" role="tab" data-tab="signin" aria-selected="false">Sign in</button>
+    </div>
+
+    <form id="dt-signup" class="dt-authform" data-for="signup">
+      <h3>Create your free account</h3>
+      <p>Your first {SITE.freeLimit} invoices and {SITE.freeLimit} quotations are free. We only use your email to verify your account and count your free documents.</p>
+      <label>Email<input name="email" type="email" required autocomplete="email" /></label>
+      <label>Password <span class="dt-opt">at least 8 characters</span><input name="password" type="password" minlength="8" required autocomplete="new-password" /></label>
+      <button class="btn btn-blue" type="submit">Create account</button>
+    </form>
+
+    <form id="dt-signin" class="dt-authform" data-for="signin" hidden>
+      <h3>Welcome back</h3>
+      <label>Email<input name="email" type="email" required autocomplete="email" /></label>
+      <label>Password<input name="password" type="password" required autocomplete="current-password" /></label>
+      <button class="btn btn-blue" type="submit">Sign in</button>
+      <button type="button" class="dt-link" id="dt-forgot">Forgot your password?</button>
+    </form>
+
+    <form id="dt-forgotform" class="dt-authform" data-for="forgot" hidden>
+      <h3>Reset your password</h3>
+      <p>Enter your email and we'll send you a link to choose a new password.</p>
+      <label>Email<input name="email" type="email" required autocomplete="email" /></label>
+      <button class="btn btn-blue" type="submit">Send reset link</button>
+      <button type="button" class="dt-link" data-tab="signin">Back to sign in</button>
+    </form>
+
+    <div id="dt-verify" class="dt-authform" data-for="verify" hidden>
+      <h3>Check your email</h3>
+      <p id="dt-verify-text">We sent a code to your email. Enter it below.</p>
+      <form id="dt-codeform" class="dt-authform" autocomplete="off">
+        <input id="dt-code" name="code" class="dt-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="Enter the code" aria-label="Confirmation code" />
+        <button type="submit" class="btn btn-primary">Verify and continue</button>
+      </form>
+      <button type="button" class="dt-link" id="dt-resend">Didn't get it? Send a new code</button>
+    </div>
+
+    <p class="dt-authmsg" id="dt-authmsg" role="status" aria-live="polite"></p>
+  </dialog>
+
+  <!-- Limit reached -->
+  <dialog id="dt-limit" class="dt-dialog">
+    <button type="button" class="dt-x" data-close aria-label="Close">×</button>
+    <div class="dt-authform">
+      <h3>You've used your {SITE.freeLimit} free {noun}s</h3>
+      <p>That's the free limit on the website. The FreelanceDesk app has no limits: unlimited invoices and quotations, clients, payments and income analytics, all private on your phone.</p>
+      <a class="btn btn-primary" href={SITE.playUrl} rel="noopener">Get the app on Google Play</a>
+      <button type="button" class="dt-link" data-close>Maybe later</button>
+    </div>
+  </dialog>
+</div>
+
+<script>
+  import { supabase, supabaseConfigured } from "../lib/supabase";
+  import { buildPdf, totals, money, prettyDate, TEMPLATES, type DocData, type DocKind, type TemplateId } from "../lib/pdf";
+
+  const root = document.getElementById("doctool") as HTMLElement;
+  const kind = root.dataset.kind as DocKind;
+  const LIMIT = Number(root.dataset.limit || 2);
+  const isInvoice = kind === "invoice";
+  const noun = isInvoice ? "invoice" : "quotation";
+  const STORE = `fd-tool-v1-${kind}`;
+
+  const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+  const form = $<HTMLFormElement>("dt-form");
+  const field = (name: string) => form.elements.namedItem(name) as HTMLInputElement | null;
+  const esc = (s: unknown) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c] as string));
+
+  type Item = { name: string; qty: number; rate: number };
+  let items: Item[] = [{ name: "", qty: 1, rate: 0 }];
+
+  // ── brand: logo + accent colour (kept in this browser only) ──
+  let logo: { data: string; w: number; h: number } | null = null;
+  let accent = "";
+  try {
+    const raw = localStorage.getItem("fd-brand-v1");
+    if (raw) { const b = JSON.parse(raw); if (b.logo && typeof b.logo.data === "string") logo = b.logo; if (typeof b.accent === "string") accent = b.accent; }
+  } catch { /* ignore */ }
+  const saveBrand = () => { try { localStorage.setItem("fd-brand-v1", JSON.stringify({ logo, accent })); } catch { /* too big or blocked: fine */ } };
+
+  // ── dates ──
+  const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  const plusDays = (n: number) => { const d = new Date(); d.setDate(d.getDate() + n); return iso(d); };
+
+  // ── read the form ──
+  const val = (n: string) => (field(n)?.value ?? "").trim();
+  const num = (n: string) => { const v = parseFloat(field(n)?.value ?? ""); return Number.isFinite(v) && v > 0 ? v : 0; };
+  function readDoc(): DocData {
+    return {
+      kind, number: val("number") || (isInvoice ? "INV-001" : "QUO-001"), date: val("date"), due: val("due"),
+      currency: val("currency") || "USD",
+      from: { name: val("fromName"), email: val("fromEmail"), phone: val("fromPhone"), address: val("fromAddress"), taxId: val("fromTax") },
+      to: { name: val("toName"), email: val("toEmail"), address: val("toAddress") },
+      items: items.map((i) => ({ name: i.name, qty: i.qty, rate: i.rate })),
+      discount: num("discount"), taxRate: Math.min(num("taxRate"), 100),
+      notes: val("notes"), payment: isInvoice ? val("payment") : "",
+      logo, accent,
+    };
+  }
+
+  // ── save / restore in this browser only ──
+  function save() {
+    try {
+      const data: Record<string, string> = {};
+      Array.from(form.elements).forEach((el) => { const e = el as HTMLInputElement; if (e.name) data[e.name] = e.value; });
+      localStorage.setItem(STORE, JSON.stringify({ data, items }));
+    } catch { /* storage may be blocked; the form still works */ }
+  }
+  function restore() {
+    field("date")!.value = plusDays(0);
+    field("due")!.value = plusDays(isInvoice ? 30 : 14);
+    try {
+      const raw = localStorage.getItem(STORE);
+      if (!raw) return;
+      const saved = JSON.parse(raw);
+      Object.entries(saved.data || {}).forEach(([k, v]) => { const f = field(k); if (f && typeof v === "string" && v !== "") f.value = v; });
+      if (Array.isArray(saved.items) && saved.items.length) items = saved.items.map((i: any) => ({ name: String(i.name || ""), qty: Number(i.qty) || 0, rate: Number(i.rate) || 0 }));
+    } catch { /* ignore a corrupt saved value */ }
+  }
+
+  // ── items ──
+  const itemsEl = $("dt-items");
+  function renderItems(focusLast = false) {
+    itemsEl.innerHTML = items.map((it, i) => `
+      <div class="dt-item" data-i="${i}">
+        <input class="it-name" type="text" placeholder="What did you do?" value="${esc(it.name)}" aria-label="Description" />
+        <input class="it-qty" type="number" min="0" step="any" inputmode="decimal" value="${it.qty}" aria-label="Quantity" />
+        <input class="it-rate" type="number" min="0" step="any" inputmode="decimal" value="${it.rate || ""}" placeholder="0" aria-label="Rate" />
+        <output class="it-amt">${(it.qty * it.rate).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</output>
+        <button type="button" class="it-del" aria-label="Remove item" ${items.length === 1 ? "disabled" : ""}>×</button>
+      </div>`).join("");
+    if (focusLast) (itemsEl.querySelector(".dt-item:last-child .it-name") as HTMLInputElement | null)?.focus();
+  }
+  itemsEl.addEventListener("input", (e) => {
+    const row = (e.target as HTMLElement).closest(".dt-item") as HTMLElement | null;
+    if (!row) return;
+    const i = Number(row.dataset.i);
+    items[i] = {
+      name: (row.querySelector(".it-name") as HTMLInputElement).value,
+      qty: Math.max(0, parseFloat((row.querySelector(".it-qty") as HTMLInputElement).value) || 0),
+      rate: Math.max(0, parseFloat((row.querySelector(".it-rate") as HTMLInputElement).value) || 0),
+    };
+    (row.querySelector(".it-amt") as HTMLElement).textContent = (items[i].qty * items[i].rate).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    update();
+  });
+  itemsEl.addEventListener("click", (e) => {
+    const btn = (e.target as HTMLElement).closest(".it-del");
+    if (!btn) return;
+    const i = Number((btn.closest(".dt-item") as HTMLElement).dataset.i);
+    if (items.length > 1) { items.splice(i, 1); renderItems(); update(); }
+  });
+  $("dt-add").addEventListener("click", () => { items.push({ name: "", qty: 1, rate: 0 }); renderItems(true); update(); });
+
+  // ── brand controls ──
+  const logoIn = $<HTMLInputElement>("dt-logo");
+  const logoPrev = $<HTMLImageElement>("dt-logo-prev");
+  const colorIn = $<HTMLInputElement>("dt-accent");
+  function renderBrand() {
+    logoPrev.hidden = !logo; $("dt-logo-empty").hidden = !!logo; $("dt-logo-clear").hidden = !logo;
+    if (logo) logoPrev.src = logo.data;
+    document.querySelectorAll<HTMLElement>("#dt-swatches button").forEach((b) => b.classList.toggle("on", (b.dataset.c || "") === accent));
+    if (accent) colorIn.value = accent;
+  }
+  logoIn.addEventListener("change", () => {
+    const f = logoIn.files?.[0];
+    logoIn.value = "";
+    if (!f) return;
+    if (!f.type.startsWith("image/")) { setMsg("Please choose an image file.", "err"); return; }
+    const url = URL.createObjectURL(f);
+    const img = new Image();
+    img.onload = () => {
+      const k = Math.min(1, 480 / Math.max(img.width || 1, img.height || 1));
+      const w = Math.max(1, Math.round((img.width || 100) * k)), h = Math.max(1, Math.round((img.height || 100) * k));
+      const c = document.createElement("canvas"); c.width = w; c.height = h;
+      c.getContext("2d")!.drawImage(img, 0, 0, w, h);
+      logo = { data: c.toDataURL("image/png"), w, h };
+      URL.revokeObjectURL(url); saveBrand(); renderBrand(); renderPreview(); setMsg("");
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); setMsg("Couldn't read that image. Try a PNG or JPG.", "err"); };
+    img.src = url;
+  });
+  $("dt-logo-clear").addEventListener("click", () => { logo = null; saveBrand(); renderBrand(); renderPreview(); });
+  $("dt-swatches").addEventListener("click", (e) => {
+    const b = (e.target as HTMLElement).closest("button[data-c]") as HTMLElement | null;
+    if (!b) return;
+    accent = b.dataset.c || ""; saveBrand(); renderBrand(); renderPreview();
+  });
+  colorIn.addEventListener("input", () => { accent = colorIn.value; saveBrand(); renderBrand(); renderPreview(); });
+
+  // ── template picker ──
+  let tpl: TemplateId = "classic";
+  try { const t = localStorage.getItem("fd-tpl-v1"); if (t && TEMPLATES.some((x) => x.id === t)) tpl = t as TemplateId; } catch { /* ignore */ }
+  const tplsEl = $("dt-tpls");
+  function renderTpls() {
+    tplsEl.innerHTML = TEMPLATES.map((t) => `<button type="button" role="radio" aria-checked="${t.id === tpl}" data-id="${t.id}" class="dt-tpl${t.id === tpl ? " on" : ""}"><i class="sw sw-${t.id}"></i><b>${t.name}</b></button>`).join("")
+      + `<a class="dt-tpl more" href="https://play.google.com/store/apps/details?id=com.freelancedesk.app" rel="noopener"><i class="sw sw-more"></i><b>More in the app</b></a>`;
+  }
+  tplsEl.addEventListener("click", (e) => {
+    const b = (e.target as HTMLElement).closest("button.dt-tpl") as HTMLElement | null;
+    if (!b) return;
+    tpl = b.dataset.id as TemplateId;
+    try { localStorage.setItem("fd-tpl-v1", tpl); } catch { /* ignore */ }
+    renderTpls(); renderPreview();
+  });
+  renderTpls();
+
+  // ── live preview ──
+  const preview = $("dt-preview");
+  function renderPreview() {
+    const d = readDoc();
+    const t = totals(d);
+    const rows = d.items.filter((i) => i.name.trim());
+    const lines = (s: string) => esc(s).replace(/\n/g, "<br>");
+    preview.dataset.tpl = tpl;
+    if (accent) { preview.dataset.accent = "1"; preview.style.setProperty("--ac", accent); } else { delete preview.dataset.accent; preview.style.removeProperty("--ac"); }
+    preview.innerHTML = `
+      <div class="pv-top">
+        <div class="pv-from">${logo ? `<img class="pv-logo" src="${logo.data}" alt="" />` : ""}<b>${esc(d.from.name) || "Your business"}</b>
+          <span>${lines(d.from.address)}${d.from.taxId ? `<br>Tax ID: ${esc(d.from.taxId)}` : ""}${d.from.email || d.from.phone ? `<br>${esc([d.from.email, d.from.phone].filter(Boolean).join(" · "))}` : ""}</span></div>
+        <div class="pv-title"><strong>${isInvoice ? "INVOICE" : "QUOTATION"}</strong><em>${esc(d.number).toUpperCase()}</em></div>
+      </div>
+      <div class="pv-rule"></div>
+      <div class="pv-meta">
+        <div><small>${isInvoice ? "Bill to" : "Prepared for"}</small><b>${esc(d.to.name) || "Client name"}</b><span>${esc(d.to.email)}${d.to.email && d.to.address ? "<br>" : ""}${esc(d.to.address)}</span></div>
+        <div><small>${isInvoice ? "Invoice date" : "Quotation date"}</small><b>${esc(prettyDate(d.date))}</b></div>
+        <div><small>${isInvoice ? "Due date" : "Valid until"}</small><b class="pv-due">${esc(prettyDate(d.due))}</b></div>
+      </div>
+      <table class="pv-table"><thead><tr><th>Description</th><th>Qty</th><th>Rate</th><th>Amount</th></tr></thead><tbody>
+        ${rows.length ? rows.map((r) => `<tr><td>${esc(r.name)}</td><td>${r.qty}</td><td>${r.rate.toLocaleString("en-US", { minimumFractionDigits: 2 })}</td><td><b>${(r.qty * r.rate).toLocaleString("en-US", { minimumFractionDigits: 2 })}</b></td></tr>`).join("") : `<tr><td class="pv-empty" colspan="4">Add your first item</td></tr>`}
+      </tbody></table>
+      <div class="pv-totals">
+        <div><span>Subtotal</span><span>${money(t.subtotal, d.currency)}</span></div>
+        ${t.discount > 0 ? `<div class="pv-red"><span>Discount</span><span>-${money(t.discount, d.currency)}</span></div>` : ""}
+        ${d.taxRate > 0 ? `<div><span>Tax (${d.taxRate}%)</span><span>${money(t.tax, d.currency)}</span></div>` : ""}
+        <div class="pv-total"><span>${isInvoice ? "TOTAL DUE" : "ESTIMATED TOTAL"}</span><strong>${money(t.total, d.currency)}</strong></div>
+      </div>
+      ${d.payment ? `<div class="pv-note"><small>Payment details</small><p>${lines(d.payment)}</p></div>` : ""}
+      ${d.notes ? `<div class="pv-note"><small>${isInvoice ? "Notes" : "Notes and terms"}</small><p>${lines(d.notes)}</p></div>` : ""}
+      <div class="pv-foot">Created with FreelanceDesk</div>`;
+  }
+  function update() { renderPreview(); save(); }
+  form.addEventListener("input", (e) => { if (!(e.target as HTMLElement).closest("#dt-items")) update(); });
+  form.addEventListener("submit", (e) => e.preventDefault());
+
+  // ── messages ──
+  const msg = $("dt-msg");
+  const setMsg = (text: string, tone: "ok" | "err" | "" = "") => { msg.textContent = text; msg.dataset.tone = tone; };
+
+  // ── auth state ──
+  type Usage = { limit: number; invoice: number; quotation: number; verified: boolean };
+  let session: any = null;
+  let usage: Usage | null = null;
+  const leftNow = () => (usage ? Math.max(0, LIMIT - (kind === "invoice" ? usage.invoice : usage.quotation)) : LIMIT);
+
+  function renderAcct() {
+    $("dt-acct").hidden = true;           // the account menu lives in the nav bar now
+    $("dt-acct-out").hidden = true;
+    $("dt-acct-in").hidden = !session;
+    $("dt-hint").hidden = !!session;
+    if (session) {
+      $("dt-email").textContent = session.user?.email ?? "";
+      $("dt-usage").textContent = usage ? `${leftNow()} of ${LIMIT} free ${noun}s left` : "";
+    }
+    const btn = $<HTMLButtonElement>("dt-download");
+    btn.textContent = session ? `Download PDF${usage ? ` (${leftNow()} free left)` : ""}` : "Download PDF";
+  }
+  async function loadUsage() {
+    if (!supabase || !session) return;
+    const { data, error } = await supabase.rpc("get_usage");
+    if (!error && data) { usage = data as Usage; renderAcct(); }
+  }
+
+  // ── dialogs ──
+  const authDlg = $<HTMLDialogElement>("dt-auth");
+  const limitDlg = $<HTMLDialogElement>("dt-limit");
+  const authMsg = $("dt-authmsg");
+  const setAuthMsg = (t: string, tone: "ok" | "err" | "" = "") => { authMsg.textContent = t; authMsg.dataset.tone = tone; };
+  let pendingEmail = "";
+
+  function showTab(tab: "signup" | "signin" | "forgot" | "verify") {
+    authDlg.querySelectorAll<HTMLElement>("[data-for]").forEach((el) => { el.hidden = el.dataset.for !== tab; });
+    authDlg.querySelectorAll<HTMLElement>("[data-tab][role=tab]").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.tab === tab)));
+    (authDlg.querySelector(".dt-tabs") as HTMLElement).hidden = tab === "verify" || tab === "forgot";
+    setAuthMsg("");
+  }
+  function openAuth(tab: "signup" | "signin") {
+    if (!supabaseConfigured) { setMsg("Accounts aren't connected on this site yet.", "err"); return; }
+    showTab(tab);
+    if (!authDlg.open) authDlg.showModal();
+  }
+  document.querySelectorAll<HTMLElement>("[data-open-auth]").forEach((b) => b.addEventListener("click", () => openAuth(b.dataset.openAuth as "signup" | "signin")));
+  document.querySelectorAll<HTMLElement>("dialog [data-close]").forEach((b) => b.addEventListener("click", () => (b.closest("dialog") as HTMLDialogElement).close()));
+  authDlg.querySelectorAll<HTMLElement>("[data-tab]").forEach((b) => b.addEventListener("click", () => showTab(b.dataset.tab as any)));
+  $("dt-forgot").addEventListener("click", () => showTab("forgot"));
+  [authDlg, limitDlg].forEach((d) => d.addEventListener("click", (e) => { if (e.target === d) d.close(); }));
+
+  function friendly(err: any): string {
+    const m = String(err?.message || "").toLowerCase();
+    if (m.includes("invalid login")) return "That email and password don't match. Check them and try again.";
+    if (m.includes("already registered")) return "That email already has an account. Use Sign in instead.";
+    if (m.includes("rate limit") || m.includes("too many")) return "Too many attempts. Please wait a minute and try again.";
+    if (m.includes("password")) return "Choose a password with at least 8 characters.";
+    if (m.includes("email")) return "Please enter a valid email address.";
+    return "Something went wrong. Please try again.";
+  }
+  const submitBtn = (f: HTMLFormElement) => f.querySelector("button[type=submit]") as HTMLButtonElement;
+  const busy = (f: HTMLFormElement, on: boolean) => { const b = submitBtn(f); b.disabled = on; };
+
+  $<HTMLFormElement>("dt-signup").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!supabase) return;
+    const f = e.currentTarget as HTMLFormElement;
+    const email = (f.elements.namedItem("email") as HTMLInputElement).value.trim();
+    const password = (f.elements.namedItem("password") as HTMLInputElement).value;
+    if (password.length < 8) return setAuthMsg("Choose a password with at least 8 characters.", "err");
+    busy(f, true); setAuthMsg("Creating your account…");
+    const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: location.origin + location.pathname } });
+    busy(f, false);
+    if (error) return setAuthMsg(friendly(error), "err");
+    if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) return setAuthMsg("That email already has an account. Use Sign in instead.", "err");
+    if (data.session) { authDlg.close(); setMsg("You're in. Fill in your document and download it.", "ok"); return; }
+    pendingEmail = email;
+    ($("dt-verify-text")).textContent = `We sent a code to ${email}. Enter it below to finish. It can take a minute, and check your spam folder.`;
+    showTab("verify");
+  });
+
+  $<HTMLFormElement>("dt-signin").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!supabase) return;
+    const f = e.currentTarget as HTMLFormElement;
+    const email = (f.elements.namedItem("email") as HTMLInputElement).value.trim();
+    const password = (f.elements.namedItem("password") as HTMLInputElement).value;
+    busy(f, true); setAuthMsg("Signing you in…");
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    busy(f, false);
+    if (error) {
+      if (String(error.message).toLowerCase().includes("not confirmed")) {
+        pendingEmail = email;
+        ($("dt-verify-text")).textContent = `${email} isn't confirmed yet. Enter the code we emailed you, or send a new one.`;
+        return showTab("verify");
+      }
+      return setAuthMsg(friendly(error), "err");
+    }
+    authDlg.close(); setMsg("Signed in.", "ok");
+  });
+
+  $<HTMLFormElement>("dt-forgotform").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!supabase) return;
+    const f = e.currentTarget as HTMLFormElement;
+    const email = (f.elements.namedItem("email") as HTMLInputElement).value.trim();
+    busy(f, true);
+    await supabase.auth.resetPasswordForEmail(email, { redirectTo: location.origin + "/reset-password/" });
+    busy(f, false);
+    setAuthMsg("If that email has an account, we've sent a link to reset the password.", "ok");
+  });
+
+  $<HTMLFormElement>("dt-codeform").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!supabase || !pendingEmail) return;
+    const f = e.currentTarget as HTMLFormElement;
+    const token = (f.elements.namedItem("code") as HTMLInputElement).value.replace(/\s+/g, "");
+    if (token.length < 6) return setAuthMsg("Enter the code from the email.", "err");
+    busy(f, true); setAuthMsg("Checking the code…");
+    const { error } = await supabase.auth.verifyOtp({ email: pendingEmail, token, type: "signup" });
+    busy(f, false);
+    if (error) return setAuthMsg("That code isn't right or has expired. Check it, or send a new one.", "err");
+    (f.elements.namedItem("code") as HTMLInputElement).value = "";
+    authDlg.close(); setMsg("Email confirmed. You're in. Download your document.", "ok");
+  });
+
+  $("dt-resend").addEventListener("click", async () => {
+    if (!supabase || !pendingEmail) return;
+    const { error } = await supabase.auth.resend({ type: "signup", email: pendingEmail, options: { emailRedirectTo: location.origin + location.pathname } });
+    setAuthMsg(error ? friendly(error) : "A new code is on its way. It can take a minute, and check your spam folder.", error ? "err" : "ok");
+  });
+
+  // ── account menu ──
+  $("dt-signout").addEventListener("click", async () => { await supabase?.auth.signOut(); setMsg("Signed out."); });
+  let confirmDelete = 0;
+  $("dt-delete").addEventListener("click", async (e) => {
+    const btn = e.currentTarget as HTMLButtonElement;
+    if (!supabase) return;
+    if (Date.now() - confirmDelete > 6000) { confirmDelete = Date.now(); btn.textContent = "Click again to erase your account"; setTimeout(() => (btn.textContent = "Delete my account"), 6000); return; }
+    const { error } = await supabase.rpc("delete_my_account");
+    if (error) { setMsg("Couldn't delete the account. Please try again.", "err"); return; }
+    await supabase.auth.signOut();
+    btn.textContent = "Delete my account";
+    setMsg("Your account and its data have been deleted.", "ok");
+  });
+
+  // ── download ──
+  const dl = $<HTMLButtonElement>("dt-download");
+  dl.addEventListener("click", async () => {
+    if (!supabaseConfigured || !supabase) { setMsg("Accounts aren't connected on this site yet.", "err"); return; }
+    if (!session) { openAuth("signup"); return; }
+
+    const d = readDoc();
+    if (!d.from.name.trim()) return setMsg("Add your business or name first.", "err");
+    if (!d.to.name.trim()) return setMsg("Add your client's name first.", "err");
+    if (!d.items.some((i) => i.name.trim() && i.qty > 0)) return setMsg("Add at least one item with a description and a quantity.", "err");
+
+    dl.disabled = true; setMsg("Preparing your PDF…");
+    try {
+      const pdf = buildPdf(d, tpl);                      // build first, so a failure never costs a free document
+      const { data, error } = await supabase.rpc("consume_credit", { p_kind: kind });
+      if (error || !data) throw error || new Error("no answer");
+      if (!data.allowed) {
+        if (data.reason === "limit") { setMsg(""); limitDlg.showModal(); }
+        else if (data.reason === "unverified") { pendingEmail = session.user?.email ?? ""; ($("dt-verify-text")).textContent = "Please confirm your email first. Enter the code we emailed you, or send a new one."; showTab("verify"); authDlg.showModal(); setMsg(""); }
+        else { openAuth("signin"); setMsg(""); }
+        return;
+      }
+      pdf.save(`${(d.number || noun).replace(/[^\w.-]+/g, "_")}.pdf`);
+      await loadUsage();
+      setMsg(`Downloaded. You have ${leftNow()} free ${noun}${leftNow() === 1 ? "" : "s"} left.`, "ok");
+    } catch {
+      setMsg("Something went wrong. Please try again.", "err");
+    } finally {
+      dl.disabled = false;
+    }
+  });
+
+  // ── start ──
+  restore();
+  renderBrand();
+  renderItems();
+  renderPreview();
+  renderAcct();
+  if (!supabaseConfigured) { $("dt-notice").hidden = false; dl.disabled = true; dl.textContent = "Downloads are switched off for now"; }
+  const openFromHash = () => { if (location.hash === "#signin" && supabaseConfigured) { openAuth("signin"); history.replaceState(null, "", location.pathname); } };
+  openFromHash(); window.addEventListener("hashchange", openFromHash);
+  if (supabase) {
+    supabase.auth.getSession().then(({ data }) => { session = data.session; renderAcct(); loadUsage(); });
+    supabase.auth.onAuthStateChange((_event, s) => {
+      session = s;
+      if (!s) usage = null;
+      renderAcct();
+      if (s) { loadUsage(); if (authDlg.open) authDlg.close(); }
+    });
+  }
+</script>
+
+<style is:global>
+  .dt { display: grid; gap: 18px; }
+  .dt-acct { background: #08122e; border: 1px solid rgba(127,178,255,.28); border-radius: 18px; padding: 14px 18px; }
+  .dt-acct-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; color: var(--soft); font-size: .95rem; }
+  .dt-acct-row[hidden] { display: none; }
+  .dt-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .dt-chip { margin-left: 6px; padding: 3px 10px; border-radius: 99px; background: rgba(0,200,150,.14); color: #5fe0b8; font-weight: 700; font-size: .8rem; white-space: nowrap; }
+  .dt-notice { padding: 14px 18px; border-radius: 14px; background: rgba(255,215,0,.08); border: 1px solid rgba(255,215,0,.3); color: #ffe3a3; }
+  .dt-menu { position: relative; } .dt-menu summary { list-style: none; } .dt-menu summary::-webkit-details-marker { display: none; }
+  .dt-menu-panel { position: absolute; right: 0; top: 46px; z-index: 5; min-width: 220px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 8px; display: grid; gap: 2px; box-shadow: 0 20px 50px rgba(0,0,0,.5); }
+  .dt-menu-panel button { text-align: left; background: none; border: 0; color: var(--text); font: inherit; padding: 11px 12px; border-radius: 10px; cursor: pointer; }
+  .dt-menu-panel button:hover { background: var(--surface-2); } .dt-menu-panel .danger { color: var(--red); }
+
+  .dt-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: 22px; align-items: start; }
+  @media (max-width: 960px) { .dt-grid { grid-template-columns: 1fr; } }
+  .dt-form { display: grid; gap: 16px; }
+  .dt-form fieldset { margin: 0; border: 1px solid rgba(127,178,255,.28); border-radius: 20px; padding: 26px 20px 20px; display: grid; gap: 14px; background: #08122e; min-width: 0; box-shadow: 0 18px 40px rgba(2,8,40,.35); }
+  .dt-form legend { padding: 8px 18px; margin-left: 4px; font-weight: 600; font-size: 1.02rem; letter-spacing: 0; text-transform: none; color: #fff; background: linear-gradient(135deg, #4a93ff, #1d5be0); border-radius: 999px; box-shadow: 0 8px 20px rgba(29,91,224,.4); }
+  .dt label { display: grid; gap: 7px; font-size: .88rem; font-weight: 700; color: var(--soft); min-width: 0; }
+  .dt-opt { font-weight: 500; color: var(--muted); font-size: .8rem; }
+  .dt input, .dt select, .dt textarea { width: 100%; min-width: 0; font: inherit; font-size: 1rem; font-weight: 500; color: var(--text); background: #07101f; border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+  .dt textarea { resize: vertical; }
+  .dt input:focus, .dt select:focus, .dt textarea:focus { outline: none; border-color: var(--blue-light); box-shadow: 0 0 0 3px rgba(96,165,250,.2); }
+  .dt input::placeholder, .dt textarea::placeholder { color: #50607c; }
+  .dt-two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; } @media (max-width: 520px) { .dt-two { grid-template-columns: 1fr; } }
+  .dt-small { font-size: .85rem; color: var(--muted); }
+
+  .dt-items-head, .dt-item { display: grid; grid-template-columns: minmax(0, 1fr) 62px 86px 84px 34px; gap: 8px; align-items: center; }
+  .dt-items-head { font-size: .72rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); padding: 0 2px; }
+  #dt-items { display: grid; gap: 8px; }
+  .dt-item output { font-weight: 700; font-size: .9rem; text-align: right; color: var(--soft); overflow-wrap: anywhere; }
+  .it-del { width: 34px; height: 34px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface-2); color: var(--soft); font-size: 1.2rem; cursor: pointer; }
+  .it-del:disabled { opacity: .35; cursor: not-allowed; }
+  @media (max-width: 560px) {
+    .dt-items-head { display: none; }
+    .dt-item { grid-template-columns: 1fr 1fr 1fr; padding: 12px; border: 1px solid var(--line); border-radius: 14px; }
+    .dt-item .it-name { grid-column: 1 / -1; }
+    .dt-item output { text-align: left; } .dt-item .it-del { justify-self: end; }
+  }
+
+  .dt-side { position: sticky; top: 86px; display: grid; gap: 12px; }
+  @media (max-width: 960px) { .dt-side { position: static; } }
+  .dt-download { width: 100%; }
+  .dt-msg { min-height: 1.4em; font-size: .92rem; text-align: center; color: var(--soft); }
+  .dt-msg[data-tone="ok"], .dt-authmsg[data-tone="ok"] { color: #5fe0b8; } .dt-msg[data-tone="err"], .dt-authmsg[data-tone="err"] { color: var(--red); }
+
+  /* brand */
+  .dt-brand { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .dt-logo-box { width: 120px; height: 64px; border-radius: 12px; background: #fff; display: grid; place-items: center; overflow: hidden; color: #8a93a8; font-size: .8rem; border: 1px dashed rgba(10,20,51,.25); }
+  .dt-logo-box img { max-width: 100%; max-height: 100%; object-fit: contain; padding: 6px; }
+  .dt-logo-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .dt-file { cursor: pointer; }
+  .dt-colors { display: grid; gap: 8px; font-size: .88rem; font-weight: 700; color: var(--soft); }
+  .dt-swatches { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .dt-swatches button { width: 32px; height: 32px; border-radius: 50%; border: 2px solid transparent; background: var(--c, transparent); cursor: pointer; box-shadow: 0 0 0 1px rgba(255,255,255,.3) inset; padding: 0; }
+  .dt-swatches button.on { border-color: #fff; box-shadow: 0 0 0 2px #1d5be0; }
+  .dt-swatches .sw-auto { width: auto; border-radius: 99px; padding: 0 12px; font: inherit; font-size: .78rem; font-weight: 600; color: var(--soft); background: rgba(255,255,255,.08); }
+  .dt-swatches input[type=color] { width: 36px; height: 32px; padding: 0; border: 0; background: none; border-radius: 8px; cursor: pointer; }
+  .dt-hint { margin-top: 10px; font-size: .88rem; color: #dbe7ff; text-align: center; }
+  .dt-hint[hidden] { display: none; }
+  .pv-logo { display: block; max-width: 120px; max-height: 36px; object-fit: contain; margin-bottom: 8px; }
+  .dt-paper[data-tpl="modern"] .pv-logo { background: #fff; padding: 4px 6px; border-radius: 5px; }
+  .dt-paper[data-accent] .pv-meta small, .dt-paper[data-accent] .pv-note small, .dt-paper[data-accent] .pv-title em, .dt-paper[data-accent] .pv-due { color: var(--ac); }
+  .dt-paper[data-accent][data-tpl="classic"] .pv-rule { border-bottom-color: var(--ac); }
+  .dt-paper[data-accent][data-tpl="modern"] .pv-top, .dt-paper[data-accent][data-tpl="modern"] .pv-table th, .dt-paper[data-accent][data-tpl="modern"] .pv-total { background: var(--ac); }
+  .dt-paper[data-accent][data-tpl="modern"] .pv-title em, .dt-paper[data-accent][data-tpl="modern"] .pv-from span { color: rgba(255,255,255,.8); }
+
+  /* template picker + looks */
+  .dt-tpls { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 14px; }
+  .dt-tpl { display: grid; gap: 6px; justify-items: center; align-content: start; padding: 10px 6px 9px; border-radius: 14px; background: #08122e; border: 1px solid rgba(127,178,255,.28); color: var(--soft); font: inherit; font-size: .74rem; cursor: pointer; text-decoration: none; text-align: center; line-height: 1.2; }
+  .dt-tpl b { font-weight: 500; } .dt-tpl:hover { border-color: rgba(127,178,255,.5); color: #fff; }
+  .dt-tpl.on { border-color: #4a93ff; background: rgba(47,123,255,.2); color: #fff; }
+  .dt-tpl .sw { width: 34px; height: 44px; border-radius: 4px; background: #fdfcfa; display: block; position: relative; overflow: hidden; }
+  .sw-classic::before { content: ""; position: absolute; left: 4px; right: 4px; top: 8px; height: 3px; border-top: 2px solid #14213d; border-bottom: 1px solid #b08d57; }
+  .sw-minimal::before { content: ""; position: absolute; left: 5px; top: 7px; width: 16px; height: 4px; background: #111; }
+  .sw-modern::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 14px; background: #1d5be0; }
+  .sw-modern::after { content: ""; position: absolute; left: 4px; right: 4px; bottom: 7px; height: 7px; border-radius: 2px; background: #1d5be0; }
+  .dt-tpl .sw-more { background: linear-gradient(135deg, #0a2cb0, #2f84ff); } .sw-more::before { content: "+"; position: absolute; inset: 0; display: grid; place-items: center; color: #fff; font-size: 18px; }
+  .dt-tpl.more { border-style: dashed; }
+  .dt-paper[data-tpl="minimal"] { color: #111; }
+  .dt-paper[data-tpl="minimal"] .pv-title strong { font: 300 26px/1 "Plus Jakarta Sans", Helvetica, Arial, sans-serif; letter-spacing: -.02em; } .dt-paper[data-tpl="minimal"] .pv-title em { color: #111; }
+  .dt-paper[data-tpl="minimal"] .pv-rule { border-top: 1px solid #111; border-bottom: 0; height: 0; }
+  .dt-paper[data-tpl="minimal"] .pv-meta small, .dt-paper[data-tpl="minimal"] .pv-note small { color: #8c8c8c; } .dt-paper[data-tpl="minimal"] .pv-due { color: #111; }
+  .dt-paper[data-tpl="minimal"] .pv-table th { border-bottom-color: #111; } .dt-paper[data-tpl="minimal"] .pv-table td { border-bottom-color: #e1e1e1; }
+  .dt-paper[data-tpl="minimal"] .pv-total { border-top-color: #111; } .dt-paper[data-tpl="minimal"] .pv-total strong { font-family: "Plus Jakarta Sans", Helvetica, Arial, sans-serif; font-weight: 700; }
+  .dt-paper[data-tpl="modern"] { color: #0a1433; background: #fff; }
+  .dt-paper[data-tpl="modern"] .pv-top { margin: -26px -24px 14px; padding: 22px 24px; background: #1d5be0; color: #fff; }
+  .dt-paper[data-tpl="modern"] .pv-from span, .dt-paper[data-tpl="modern"] .pv-title em { color: #d6e4ff; }
+  .dt-paper[data-tpl="modern"] .pv-title strong { font: 700 20px/1 "Plus Jakarta Sans", Helvetica, Arial, sans-serif; letter-spacing: -.01em; }
+  .dt-paper[data-tpl="modern"] .pv-rule { display: none; }
+  .dt-paper[data-tpl="modern"] .pv-meta small, .dt-paper[data-tpl="modern"] .pv-note small { color: #1d5be0; } .dt-paper[data-tpl="modern"] .pv-due { color: #1d5be0; }
+  .dt-paper[data-tpl="modern"] .pv-table th { background: #1d5be0; color: #fff; border: 0; padding: 7px 6px; } .dt-paper[data-tpl="modern"] .pv-table th:first-child { border-radius: 6px 0 0 6px; } .dt-paper[data-tpl="modern"] .pv-table th:last-child { border-radius: 0 6px 6px 0; }
+  .dt-paper[data-tpl="modern"] .pv-table td { border-bottom-color: #e4e9f5; padding-inline: 6px; } .dt-paper[data-tpl="modern"] .pv-table td:first-child { color: #0a1433; }
+  .dt-paper[data-tpl="modern"] .pv-total { background: #1d5be0; color: #fff !important; border: 0; border-radius: 8px; padding: 9px 10px; } .dt-paper[data-tpl="modern"] .pv-total strong { font-family: "Plus Jakarta Sans", Helvetica, Arial, sans-serif; font-size: 15px; }
+
+  /* live preview paper (mirrors the PDF) */
+  .dt-paper { background: #fdfcfa; color: #14213d; border-radius: 12px; padding: 26px 24px 18px; font-size: 11px; line-height: 1.5; box-shadow: 0 24px 60px rgba(0,0,0,.45); overflow: hidden; }
+  .pv-top { display: flex; justify-content: space-between; gap: 14px; align-items: flex-start; }
+  .pv-from b { display: block; font-size: 14px; } .pv-from span { color: #8a8370; display: block; margin-top: 3px; overflow-wrap: anywhere; }
+  .pv-title { text-align: right; } .pv-title strong { display: block; font: 800 24px/1 Georgia, "Times New Roman", serif; letter-spacing: -.01em; } .pv-title em { display: block; font-style: normal; font-weight: 800; color: #b08d57; font-size: 10px; margin-top: 6px; letter-spacing: .06em; }
+  .pv-rule { height: 3px; border-top: 2px solid #14213d; border-bottom: 1px solid #b08d57; margin: 14px 0; }
+  .pv-meta { display: grid; grid-template-columns: 1.6fr 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+  .pv-meta small, .pv-note small { display: block; color: #b08d57; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; font-size: 8.5px; margin-bottom: 3px; }
+  .pv-meta b { display: block; font-size: 12px; } .pv-meta span { color: #8a8370; display: block; overflow-wrap: anywhere; } .pv-due { color: #8a4a1f; }
+  .pv-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  .pv-table th { text-align: right; font-size: 8.5px; letter-spacing: .1em; text-transform: uppercase; padding: 6px 0; border-bottom: 1.5px solid #14213d; } .pv-table th:first-child { text-align: left; width: 46%; }
+  .pv-table td { text-align: right; padding: 8px 0; border-bottom: 1px solid #ece7dd; color: #8a8370; overflow-wrap: anywhere; } .pv-table td:first-child { text-align: left; color: #14213d; padding-right: 8px; } .pv-table td b { color: #14213d; }
+  .pv-empty { text-align: center !important; color: #b0ab9a !important; padding: 16px 0 !important; }
+  .pv-totals { margin: 12px 0 0 auto; width: 62%; display: grid; gap: 3px; }
+  .pv-totals div { display: flex; justify-content: space-between; color: #8a8370; gap: 10px; } .pv-red { color: #b23b3b !important; }
+  .pv-total { border-top: 1.5px solid #14213d; padding-top: 8px; margin-top: 4px; align-items: baseline; color: #14213d !important; font-weight: 800; font-size: 9px; letter-spacing: .06em; }
+  .pv-total strong { font: 800 18px Georgia, "Times New Roman", serif; letter-spacing: -.01em; }
+  .pv-note { margin-top: 14px; } .pv-note p { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .pv-foot { margin-top: 18px; padding-top: 8px; border-top: 1px solid #ece7dd; text-align: center; color: #b0ab9a; font-size: 9px; }
+
+  /* dialogs: solid white cards, not glass */
+  .dt-dialog { box-sizing: border-box; overflow-x: hidden; overflow-y: auto; max-height: calc(100vh - 24px); border: 0; border-radius: 28px; background: #fff; color: #0a1433; padding: 28px; width: min(440px, calc(100vw - 32px)); box-shadow: 0 40px 100px rgba(0,5,40,.55); }
+  .dt-dialog::backdrop { background: rgba(3,8,40,.62); }
+  .dt-dialog h3 { color: #0a1433; font-size: 1.6rem; letter-spacing: -.03em; font-weight: 600; }
+  .dt-dialog label { color: #3f4c6e; }
+  .dt-dialog .dt-opt { color: #7a86a3; }
+  .dt-dialog input { background: #f1f5ff; color: #0a1433; border: 1px solid #d3dcf3; }
+  .dt-dialog input::placeholder { color: #8b96b3; }
+  .dt-dialog input:focus { border-color: #1d5be0; box-shadow: 0 0 0 3px rgba(29,91,224,.18); }
+  .dt-dialog .btn-ghost { background: #eef3ff; border-color: #d3dcf3; color: #0a1433; backdrop-filter: none; }
+  .dt-dialog .dt-code { text-align: center; font-size: 1.6rem; letter-spacing: .35em; font-weight: 600; padding: 14px; }
+  .dt-x { position: absolute; top: 14px; right: 16px; width: 34px; height: 34px; border-radius: 50%; border: 0; background: #eef3ff; color: #3f4c6e; font-size: 1.3rem; cursor: pointer; }
+  .dt-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 5px; background: #eef3ff; border-radius: 14px; margin: 6px 36px 18px 0; }
+  .dt-tabs[hidden], .dt-authform[hidden] { display: none; }
+  .dt-tabs button { border: 0; background: none; color: #6a7694; font: inherit; font-weight: 600; padding: 10px; border-radius: 10px; cursor: pointer; }
+  .dt-tabs button[aria-selected="true"] { background: #fff; color: #0a1433; box-shadow: 0 2px 8px rgba(10,20,51,.12); }
+  .dt-authform { display: grid; gap: 14px; }
+  .dt-authform p { color: #4a5675; font-size: .94rem; }
+  .dt-link { background: none; border: 0; color: #1d5be0; font: inherit; font-weight: 600; cursor: pointer; padding: 6px; }
+  .dt-authmsg { min-height: 1.3em; margin-top: 10px; font-size: .9rem; color: #4a5675; }
+  .dt-authmsg[data-tone="err"] { color: #c0344a; } .dt-authmsg[data-tone="ok"] { color: #0f8a66; }
+</style>

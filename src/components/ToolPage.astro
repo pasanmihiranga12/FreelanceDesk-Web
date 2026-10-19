@@ -1,0 +1,89 @@
+---
+import Base from "../layouts/Base.astro";
+import DocTool from "./DocTool.astro";
+import { SITE } from "../lib/site";
+
+interface Props {
+  kind: "invoice" | "quotation";
+  title: string;
+  description: string;
+  h1: string;
+  lead: string;
+  stepsTitle: string;
+  steps: { t: string; d: string }[];
+  includesTitle: string;
+  includes: string[];
+  faqs: { q: string; a: string }[];
+  related: { href: string; label: string }[];
+}
+const { kind, title, description, h1, lead, stepsTitle, steps, includesTitle, includes, faqs, related } = Astro.props;
+const path = kind === "invoice" ? "/free-invoice-generator/" : "/free-quotation-generator/";
+
+const jsonLd = [
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    name: h1,
+    url: SITE.url + path,
+    applicationCategory: "BusinessApplication",
+    operatingSystem: "Any",
+    description,
+    offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+    publisher: { "@type": "Organization", name: SITE.company },
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
+  },
+];
+---
+<Base title={title} description={description} jsonLd={jsonLd}>
+  <section class="tp-hero">
+    <div class="wrap">
+      <span class="kicker">Free tool</span>
+      <h1>{h1.split(" ").slice(0, -1).join(" ")} <em>{h1.split(" ").slice(-1).join(" ")}</em></h1>
+      <p class="lead">{lead}</p>
+    </div>
+  </section>
+
+  <section class="tp-tool">
+    <div class="wrap"><DocTool kind={kind} /></div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="prose">
+        <h2>{stepsTitle}</h2>
+        <ol>{steps.map((s) => <li><strong>{s.t}</strong> {s.d}</li>)}</ol>
+        <h2>{includesTitle}</h2>
+        <ul>{includes.map((i) => <li>{i}</li>)}</ul>
+
+        <div class="callout">
+          <p><strong>Need more than {SITE.freeLimit} {kind}s?</strong></p>
+          <p>The FreelanceDesk app has no limits. It also tracks your clients, payments and income, and works offline. Your data stays on your phone.</p>
+          <p><a class="btn btn-primary btn-sm" href={SITE.playUrl} rel="noopener" style="margin-top:8px">Get the app on Google Play</a></p>
+        </div>
+
+        <h2>Frequently asked questions</h2>
+        {faqs.map((f) => <details class="faq"><summary>{f.q}</summary><p>{f.a}</p></details>)}
+
+        <h2>Keep reading</h2>
+        <ul>{related.map((r) => <li><a href={r.href}>{r.label}</a></li>)}</ul>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style is:global>
+  .tp-hero { position: relative; margin-top: -80px; padding-block: clamp(120px, 12vw, 160px) clamp(44px, 5vw, 70px); background: linear-gradient(120deg, #0a2cb0 0%, #1654e6 45%, #2f84ff 100%); }
+  .tp-hero .lead { color: #dbe7ff; }
+  .tp-hero .kicker { color: #cfe0ff; }
+  .tp-hero h1 { margin: 22px 0 20px; font-size: clamp(3rem, 8vw, 6.8rem); max-width: 14ch; line-height: .92; }
+  .tp-hero .lead { max-width: 52ch; }
+  .tp-tool { padding-block: 44px 80px; background: linear-gradient(180deg, #0a2a8a 0%, #1654e6 45%, #0a2a8a 100%); }
+  .prose .faq { border-bottom: 1px solid var(--line); }
+  .prose .faq summary { cursor: pointer; font-weight: 700; padding: 16px 0; list-style: none; display: flex; justify-content: space-between; gap: 16px; color: #fff; }
+  .prose .faq summary::-webkit-details-marker { display: none; } .prose .faq summary::after { content: "+"; color: var(--blue-light); font-size: 1.4rem; line-height: 1; }
+  .prose .faq[open] summary::after { content: "–"; } .prose .faq p { margin: 0 0 16px; }
+</style>

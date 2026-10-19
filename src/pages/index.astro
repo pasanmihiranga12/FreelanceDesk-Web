@@ -1,0 +1,444 @@
+---
+import Base from "../layouts/Base.astro";
+import Cover from "../components/Cover.astro";
+import { SITE } from "../lib/site";
+import { posts } from "../content/posts";
+
+const faqs = [
+  { q: "Is FreelanceDesk free?", a: "You can try it free for 7 days if you are a new subscriber. After that it is $1.99 a month, billed by Google Play, and you can cancel any time in Google Play. The invoice and quotation generators on this website are separate and free for your first 2 invoices and 2 quotations." },
+  { q: "Where is my data stored?", a: "On your phone only. FreelanceDesk has no account system and no cloud. Your clients, invoices and payments never leave your device unless you export or share them yourself." },
+  { q: "Does it work offline?", a: "Yes. Everything in the app works without an internet connection. It only needs a connection to confirm your subscription with Google Play now and then." },
+  { q: "Can I send professional PDF invoices and quotations?", a: "Yes. Create an invoice or quotation, pick a template, add your logo and signature if you like, and share the PDF straight from your phone. A quotation turns into an invoice in one tap." },
+  { q: "Which currencies does it support?", a: "You can work in your own currency and create orders in other currencies. The app converts them for your totals and keeps the original amount on the invoice." },
+  { q: "Is there an iPhone version?", a: "Not yet. FreelanceDesk is on Android today." },
+];
+
+const jsonLd = [
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: "FreelanceDesk",
+    applicationCategory: "BusinessApplication",
+    operatingSystem: "Android",
+    description: "Invoices, quotations, clients and payments for freelancers. Private, offline and ad-free.",
+    url: SITE.url,
+    offers: { "@type": "Offer", price: "1.99", priceCurrency: "USD" },
+    publisher: { "@type": "Organization", name: SITE.company, url: SITE.url },
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
+  },
+];
+
+const rows = [
+  { n: "01", t: "Invoices & quotations", d: "Clean PDFs from an order or from scratch. An accepted quote becomes an invoice in one tap, with every number carried over." },
+  { n: "02", t: "Templates & your brand", d: "Pick a template, add your logo and see a live preview before you send." },
+  { n: "03", t: "E-signatures", d: "Draw your signature once, keep a signature library and attach one to any invoice." },
+  { n: "04", t: "Clients", d: "A profile for every client with photo, category, notes, contact details and their full history." },
+  { n: "05", t: "Orders & recurring work", d: "Fixed-fee or campaign orders with due dates. Repeat orders create themselves on your schedule." },
+  { n: "06", t: "Payments & reminders", d: "Record full or part payments, see what is still outstanding and get reminders on your phone." },
+  { n: "07", t: "Income analytics", d: "A swipeable income chart, monthly breakdowns, best months and client stats on your dashboard." },
+  { n: "08", t: "Recaps & badges", d: "A shareable monthly and yearly recap, badges as you grow, and a score for every client." },
+  { n: "09", t: "Tax set-aside & export", d: "See roughly how much of your income to keep aside for tax, and export your finances to CSV." },
+  { n: "10", t: "Private by design", d: "No account, no cloud, no ads. Works offline, with an optional PIN or fingerprint lock and full backup and restore." },
+];
+const tpls = [
+  { id: "eclipse", n: "Eclipse", d: "Navy night, golden sun" },
+  { id: "holo", n: "Holo", d: "Pastel mesh, rainbow table" },
+  { id: "pop", n: "Pop", d: "Loud blocks, hard shadows" },
+  { id: "aurora", n: "Aurora", d: "Black with a glowing ridge" },
+  { id: "orbit", n: "Orbit", d: "Violet gradient hero" },
+  { id: "mosaic", n: "Mosaic", d: "Geometric violet and yellow" },
+  { id: "silk", n: "Silk", d: "White card on silver waves" },
+  { id: "neon", n: "Neon", d: "Black grid, neon glow" },
+  { id: "blossom", n: "Blossom", d: "Soft grey, mauve pills" },
+  { id: "midnight", n: "Midnight", d: "Black with violet pills" },
+];
+const latest = [...posts].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 3);
+---
+<Base
+  title="FreelanceDesk: invoices, quotations and clients for freelancers"
+  description="A private, offline app for freelancers to create invoices and quotations, track clients and payments, and see their income. Free invoice and quotation generator online."
+  jsonLd={jsonLd}
+>
+    <!-- HERO -->
+  <section class="hero">
+    <div class="wrap hero-inner">
+      <p class="hero-tag">For freelancers who'd rather be working</p>
+      <h1>
+        Invoices that look like you<br />
+        <em>mean business.</em>
+      </h1>
+      <div class="hero-foot">
+        <p class="lead">Create a professional invoice or quotation in minutes, free, right here in your browser. Then run your whole freelance business from the app.</p>
+        <div class="hero-cta">
+          <a class="btn btn-white btn-xl" href="/free-invoice-generator/">Create an invoice</a>
+          <div class="hero-cta-2">
+            <a class="btn btn-ghost btn-sm" href="/free-quotation-generator/">Create a quotation</a>
+            <a class="gp" href={SITE.playUrl} rel="noopener"><img src="/google-play-badge.svg" alt="Get it on Google Play" width="217" height="63" /></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FREE TOOLS -->
+  <section class="section sec-light">
+    <div class="wrap">
+      <p class="kicker">Free, in your browser</p>
+      <h2 class="big">Need a document <em>right now?</em></h2>
+      <p class="lead" style="margin-top:26px">Make a free account and create your first {SITE.freeLimit} invoices and {SITE.freeLimit} quotations here. Want more? The app has no limits.</p>
+      <div class="tools">
+        <a class="tool" href="/free-invoice-generator/">
+          <h3>Invoice generator</h3>
+          <p>Your details, your client, your items. A clean PDF with the total front and centre.</p>
+          <span class="go">Create an invoice →</span>
+        </a>
+        <a class="tool" href="/free-quotation-generator/">
+          <h3>Quotation generator</h3>
+          <p>A priced offer with a valid-until date and clear terms, ready to win the job.</p>
+          <span class="go">Create a quotation →</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- TEMPLATES -->
+  <section class="section sec-night tpl-sec">
+    <div class="wrap">
+      <p class="kicker">Only in the app</p>
+      <h2 class="big wide">Invoices people <em>remember.</em></h2>
+      <p class="lead" style="margin-top:24px">The free generator gives you three clean templates. The app has 20 invoice templates and 6 quotation templates, from sharp and professional to bold and unforgettable. Here is a peek.</p>
+    </div>
+    <div class="tpl-scroll">
+      <button type="button" class="tpl-arrow prev" id="tpl-prev" aria-label="Previous templates"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <button type="button" class="tpl-arrow next" id="tpl-next" aria-label="More templates"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
+      <div class="tpl-track" id="tpl-track">
+        {tpls.map((t) => (
+          <a class="tpl" href={SITE.playUrl} rel="noopener" aria-label={`${t.n} template, available in the app`}>
+            <div class="tpl-img">
+              <img src={`/templates/${t.id}.webp`} alt={`${t.n} invoice template preview`} width="640" height="905" loading="lazy" />
+              <span class="lock"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>In the app</span>
+            </div>
+            <div class="tpl-meta"><b>{t.n}</b><small>{t.d}</small></div>
+          </a>
+        ))}
+      </div>
+    </div>
+    <div class="wrap tpl-cta">
+      <p>Unlock all of them, plus your logo and signature, in the app.</p>
+      <a class="gp" href={SITE.playUrl} rel="noopener"><img src="/google-play-badge.svg" alt="Get it on Google Play" width="217" height="63" /></a>
+    </div>
+  </section>
+
+  <!-- THE APP -->
+  <section class="section sec-blue app-sec">
+    <div class="wrap app-grid">
+      <div class="app-copy">
+        <p class="kicker">The app</p>
+        <h2 class="big">Your whole freelance business, <em>in your pocket.</em></h2>
+        <p class="lead" style="margin-top:26px">Invoices and quotations are just the start. FreelanceDesk keeps your clients, deadlines, payments and income together, privately on your phone, with no account and no cloud.</p>
+        <div class="cta-row" style="margin-top:34px">
+          <a class="gp" href={SITE.playUrl} rel="noopener"><img src="/google-play-badge.svg" alt="Get it on Google Play" width="217" height="63" /></a>
+          <span class="price-note"><b class="serif-em">$1.99</b> a month · 7-day free trial</span>
+        </div>
+      </div>
+
+      <div class="phone-stage"><img class="phone-img" src="/phone.webp" alt="The FreelanceDesk app dashboard on a phone" width="1687" height="1576" loading="lazy" /></div>
+    </div>
+
+    <div class="wrap">
+      <ol class="rows">
+        {rows.map((r) => (
+          <li><span class="r-n">{r.n}</span><h3>{r.t}</h3><p>{r.d}</p></li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <!-- PRIVACY -->
+  <section class="section sec-light">
+    <div class="wrap">
+      <p class="kicker">Privacy first</p>
+      <h2 class="big wide">Your clients and your money <em>stay on your phone.</em></h2>
+      <div class="priv">
+        <p class="lead">FreelanceDesk has no sign-up and no servers holding your business data. There are no ads and no trackers in the app.</p>
+        <ul class="checks">
+          <li>No account to create</li>
+          <li>Everything works offline</li>
+          <li>No advertising or analytics in the app</li>
+          <li>Optional PIN or fingerprint lock</li>
+          <li>Export or erase your data any time</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="section sec-blue price-sec">
+    <div class="wrap price-grid">
+      <div>
+        <p class="kicker">Simple pricing</p>
+        <h2 class="big">One plan. <em>No tiers.</em></h2>
+        <p class="lead" style="margin-top:24px">Start with a 7-day free trial if you are a new subscriber. Billed by Google Play. Cancel any time. Prices may vary by country.</p>
+      </div>
+      <div class="price-card">
+        <div class="price"><span class="num">$1.99</span><small>/ month</small></div>
+        <ul>
+          <li>Unlimited invoices &amp; quotations</li>
+          <li>Clients, orders &amp; payments</li>
+          <li>Analytics, recaps &amp; badges</li>
+          <li>PIN &amp; fingerprint lock</li>
+        </ul>
+        <a class="gp" href={SITE.playUrl} rel="noopener"><img src="/google-play-badge.svg" alt="Get it on Google Play" width="217" height="63" /></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- BLOG -->
+  <section class="section sec-light">
+    <div class="wrap">
+      <div class="sec-head">
+        <div><p class="kicker">The blog</p><h2 class="big">Learn to get <em>paid properly.</em></h2></div>
+        <a class="btn btn-ghost" href="/blog/">All posts →</a>
+      </div>
+      <div class="guides">
+        {latest.map((p) => (
+          <a class="pcard" href={`/blog/${p.slug}/`}>
+            <div class="pimg"><Cover slug={p.slug} /></div>
+            <div class="pbody"><span class="kicker">{p.category}</span><h3>{p.title}</h3><span class="meta">{p.minutes} min read</span></div>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section sec-blue">
+    <div class="wrap faq-wrap">
+      <div><p class="kicker">Questions</p><h2 class="big">Good <em>questions.</em></h2></div>
+      <div>
+        {faqs.map((f) => (
+          <details class="faq"><summary>{f.q}</summary><p>{f.a}</p></details>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section class="final sec-light">
+    <div class="wrap">
+      <h2>Get paid faster. <em>Look the part.</em></h2>
+      <div class="cta-row" style="justify-content:center;margin-top:40px">
+        <a class="btn btn-primary btn-xl" href="/free-invoice-generator/">Create a free invoice</a>
+        <a class="gp" href={SITE.playUrl} rel="noopener"><img src="/google-play-badge.svg" alt="Get it on Google Play" width="217" height="63" /></a>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<script>
+  const track = document.getElementById("tpl-track") as HTMLElement;
+  const prev = document.getElementById("tpl-prev") as HTMLButtonElement;
+  const next = document.getElementById("tpl-next") as HTMLButtonElement;
+  const step = () => Math.max(280, Math.round(track.clientWidth * 0.8));
+  const sync = () => {
+    prev.disabled = track.scrollLeft < 8;
+    next.disabled = track.scrollLeft + track.clientWidth >= track.scrollWidth - 8;
+  };
+  prev.addEventListener("click", () => track.scrollBy({ left: -step(), behavior: "smooth" }));
+  next.addEventListener("click", () => track.scrollBy({ left: step(), behavior: "smooth" }));
+  track.addEventListener("scroll", sync, { passive: true });
+  window.addEventListener("resize", sync);
+  sync();
+
+  // drag with the mouse (touch already scrolls natively)
+  let down = false, startX = 0, startLeft = 0, moved = false;
+  track.addEventListener("pointerdown", (e) => {
+    if (e.pointerType !== "mouse") return;
+    down = true; moved = false; startX = e.clientX; startLeft = track.scrollLeft;
+  });
+  window.addEventListener("pointermove", (e) => {
+    if (!down) return;
+    const dx = e.clientX - startX;
+    if (Math.abs(dx) > 4) { moved = true; track.style.scrollSnapType = "none"; track.classList.add("drag"); }
+    track.scrollLeft = startLeft - dx;
+  });
+  window.addEventListener("pointerup", () => {
+    if (!down) return;
+    down = false; track.classList.remove("drag"); track.style.scrollSnapType = "";
+  });
+  track.addEventListener("click", (e) => { if (moved) { e.preventDefault(); moved = false; } }, true);
+</script>
+
+<style is:global>
+  /* hero: the supplied blue background image, full bleed, behind the nav too */
+  .hero { position: relative; overflow: hidden; margin-top: -80px; min-height: 100svh; display: flex; align-items: center; padding: 104px 0 36px; background: #03050f url("/hero-bg.webp") center / cover no-repeat; }
+  .hero::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 90px; background: linear-gradient(180deg, transparent, rgba(3,5,15,.55)); pointer-events: none; }
+  .hero-inner { position: relative; z-index: 2; text-align: center; display: flex; flex-direction: column; align-items: center; max-width: 1760px; }
+  .hero-tag { font-size: .98rem; font-weight: 500; color: #cfe0ff; }
+  .hero h1 { margin: 14px 0 0; font-size: clamp(2.6rem, min(7.4vw, 14vh), 9.5rem); line-height: 1; letter-spacing: -.058em; font-weight: 500; white-space: nowrap; } .hero h1 em { display: block; margin-top: .06em; font-size: .78em; letter-spacing: -.025em; }
+
+  .hero-foot { margin-top: clamp(18px, 3vh, 34px); display: grid; justify-items: center; gap: clamp(16px, 2.6vh, 26px); max-width: 640px; } .hero .lead { font-size: clamp(1rem, 1.25vw, 1.12rem); margin-inline: auto; }
+  .cta-row { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+  .store { display: inline-flex; align-items: center; gap: 12px; padding: 9px 24px 9px 18px; border-radius: 999px; background: #000; border: 1px solid rgba(255,255,255,.3); color: #fff; text-decoration: none; transition: transform .18s ease, border-color .18s ease; }
+  .store:hover { transform: translateY(-2px); border-color: rgba(255,255,255,.65); color: #fff; }
+  .store span { display: grid; line-height: 1.1; } .store small { font-size: .62rem; letter-spacing: .1em; color: rgba(255,255,255,.75); font-weight: 500; } .store b { font-size: 1.2rem; font-weight: 600; letter-spacing: -.01em; }
+
+
+  /* templates teaser */
+  .sec-night { background: linear-gradient(180deg, #050b24 0%, #0a1d6a 100%); color: #fff; }
+  .tpl-scroll { margin-top: 50px; }
+  .tpl-scroll { position: relative; }
+  .tpl-track.drag { cursor: grabbing; user-select: none; }
+  .tpl-arrow { position: absolute; z-index: 5; top: 38%; width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; background: #fff; color: #0a1433; border: 0; cursor: pointer; box-shadow: 0 12px 30px rgba(0,0,0,.45); transition: transform .15s ease, opacity .15s ease; }
+  .tpl-arrow:hover { transform: scale(1.07); }
+  .tpl-arrow:disabled { opacity: 0; pointer-events: none; }
+  .tpl-arrow.prev { left: max(10px, calc((100vw - 1180px) / 2 - 24px)); }
+  .tpl-arrow.next { right: max(10px, calc((100vw - 1180px) / 2 - 24px)); }
+  @media (max-width: 700px) { .tpl-arrow { display: none; } }
+
+  .tpl-track { display: flex; gap: 22px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 12px max(22px, calc((100vw - 1180px) / 2 + 22px)) 34px; scrollbar-width: none; }
+  .tpl-track::-webkit-scrollbar { display: none; }
+  .tpl { flex: none; width: min(270px, 66vw); scroll-snap-align: start; text-decoration: none; color: #fff; display: grid; gap: 14px; }
+  .tpl-img { position: relative; border-radius: 16px; overflow: hidden; box-shadow: 0 26px 50px rgba(0,0,0,.45); transition: transform .25s ease; background: #111; aspect-ratio: 640 / 905; }
+  .tpl:hover .tpl-img { transform: translateY(-6px); }
+  .tpl-img img { display: block; width: 100%; height: 100%; object-fit: cover; }
+  .tpl-img::after { content: ""; position: absolute; inset: auto 0 0 0; height: 38%; background: linear-gradient(180deg, transparent, rgba(3,8,40,.75)); pointer-events: none; }
+  .lock { position: absolute; z-index: 2; top: 12px; right: 12px; display: inline-flex; align-items: center; gap: 6px; background: rgba(4,10,40,.82); border: 1px solid rgba(255,255,255,.28); color: #fff; font-size: .78rem; font-weight: 600; padding: 7px 12px; border-radius: 999px; backdrop-filter: blur(6px); }
+  .tpl-meta { display: grid; gap: 2px; } .tpl-meta b { font-size: 1.15rem; font-weight: 600; letter-spacing: -.02em; } .tpl-meta small { color: #aebbe0; font-size: .88rem; }
+  .tpl-cta { margin-top: 18px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 18px; }
+  .tpl-cta p { font-size: 1.1rem; color: #dbe7ff; max-width: 40ch; }
+
+  /* big headings */
+  .big { font-size: clamp(2.8rem, 7vw, 6rem); line-height: 1; letter-spacing: -.055em; margin-top: 18px; max-width: 14ch; font-weight: 500; }
+  .big.wide { max-width: 18ch; }
+
+  /* tools */
+  .tools { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-top: 56px; }
+  .tool { display: grid; gap: 14px; padding: clamp(28px, 4vw, 48px); min-height: 320px; align-content: end; border-radius: 32px; text-decoration: none; color: #fff; background: linear-gradient(135deg, #0a2fb8 0%, #1d6cf5 50%, #4f9bff 100%); box-shadow: 0 30px 60px rgba(29,91,224,.3); transition: transform .25s ease, box-shadow .25s ease; }
+  .tool:hover { transform: translateY(-5px); box-shadow: 0 40px 70px rgba(29,91,224,.45); color: #fff; }
+  .tool h3 { font-size: clamp(2rem, 3.6vw, 3.1rem); line-height: 1; letter-spacing: -.045em; font-weight: 500; }
+  .tool p { color: rgba(255,255,255,.85); max-width: 36ch; font-weight: 300; }
+  .go { color: #fff; font-weight: 600; }
+
+  /* app section */
+  .app-sec { border: 0; overflow-x: clip; }
+  .app-grid { display: grid; grid-template-columns: 1.15fr .85fr; gap: 30px; align-items: center; } .app-copy .big { max-width: 16ch; font-size: clamp(2.8rem, 6vw, 5.8rem); } .app-copy .big em { display: block; margin-top: .06em; font-size: .8em; letter-spacing: -.025em; }
+  .price-note { color: var(--soft); font-size: .98rem; } .price-note b { font-size: 1.6rem; }
+  .rows { list-style: none; margin: clamp(60px, 8vw, 110px) 0 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; column-gap: 56px; border-top: 1px solid var(--line); }
+  .rows li { display: grid; grid-template-columns: 44px 1fr; gap: 6px 14px; align-items: baseline; padding: 28px 0; border-bottom: 1px solid var(--line); } .rows li p { grid-column: 2; }
+  .r-n { color: #d6e6ff; font-size: 1rem; font-weight: 500; }
+  .rows h3 { font-size: clamp(1.4rem, 2vw, 1.8rem); line-height: 1.1; letter-spacing: -.04em; font-weight: 500; }
+  .rows p { color: var(--soft); font-size: 1rem; font-weight: 300; }
+
+  /* phone */
+  .phone-stage { display: grid; justify-items: center; gap: 14px; min-width: 0; }
+  .sample { font-size: .78rem; color: var(--muted); }
+  .phone { width: min(310px, 78vw); aspect-ratio: 9 / 18.5; border-radius: 46px; padding: 9px; background: linear-gradient(160deg, #3a4a6e, #0d1530); box-shadow: 0 50px 110px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.14) inset; transform: rotate(-3deg); }
+  .screen { height: 100%; border-radius: 38px; overflow: hidden; padding: 20px 14px 14px; display: flex; flex-direction: column; gap: 10px; color: #fff; background: linear-gradient(180deg, #2563f2, #112f94 30%, #0a1b58 50%, #03050f 78%); }
+  .s-head { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+  .s-avatar { width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg, #ffd9b3, #c98f6b); border: 2px solid rgba(255,255,255,.55); }
+  .s-hello { flex: 1; display: grid; line-height: 1.15; } .s-hello small { font-size: .55rem; color: rgba(255,255,255,.75); } .s-hello b { font-size: .8rem; }
+  .s-icon { width: 24px; height: 24px; border-radius: 8px; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.2); }
+  .s-card { border-radius: 18px; padding: 12px; background: linear-gradient(135deg, #1a5de8, #0d3eb5 55%, #061a5c); border: 1px solid rgba(147,197,253,.5); }
+  .s-label { font-size: .5rem; letter-spacing: .2em; color: rgba(255,255,255,.6); font-weight: 700; }
+  .s-amount { font-size: 2.15rem; font-weight: 700; letter-spacing: -.05em; line-height: 1.05; margin: 2px 0 6px; } .s-amount sup { font-size: .95rem; margin-right: 2px; color: rgba(255,255,255,.85); vertical-align: top; position: relative; top: 4px; }
+  .s-rule { height: 1px; background: rgba(255,255,255,.2); margin-bottom: 8px; }
+  .s-split { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; } .s-split div { display: grid; gap: 2px; } .s-split b { font-size: 1.1rem; letter-spacing: -.03em; } .s-split small { font-size: .5rem; color: rgba(255,255,255,.55); }
+  .amber { color: #fcd34d; }
+  .pill { justify-self: start; font-size: .5rem; font-weight: 700; padding: 3px 7px; border-radius: 99px; }
+  .pill.green { background: rgba(0,200,150,.2); color: #00c896; border: 1px solid rgba(0,200,150,.35); } .pill.amber { background: rgba(255,200,60,.18); color: #fcd34d; border: 1px solid rgba(255,200,60,.35); }
+  .s-actions { display: grid; grid-template-columns: 1fr 1.2fr .35fr; gap: 6px; padding: 6px; border-radius: 18px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12); }
+  .s-actions span { font-size: .58rem; font-weight: 700; text-align: center; padding: 8px 4px; border-radius: 12px; background: rgba(255,255,255,.1); }
+  .s-actions .primary { background: linear-gradient(135deg, #3a86ff, #1d5be0); } .s-actions .sq { padding: 0; }
+  .s-title { font-size: .72rem; font-weight: 700; margin-top: 4px; }
+  .s-row { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 14px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1); }
+  .s-row i { width: 3px; height: 22px; border-radius: 2px; background: #8a9bb5; } .s-row i.warn { background: #ffd700; }
+  .s-row div { flex: 1; display: grid; line-height: 1.2; } .s-row b { font-size: .62rem; } .s-row small { font-size: .5rem; color: rgba(255,255,255,.5); }
+  .s-row em { font-style: normal; font-family: var(--sans); font-size: .55rem; font-weight: 700; color: #8a9bb5; } .s-row em.warn { color: #ffd700; }
+  .s-tabs { margin-top: auto; display: flex; justify-content: space-between; padding: 8px 10px; border-radius: 22px; background: #0c1228; border: 1px solid rgba(255,255,255,.12); }
+  .s-tabs span { width: 22px; height: 22px; border-radius: 8px; background: rgba(255,255,255,.12); } .s-tabs .on { background: linear-gradient(135deg, #3f8cff, #1d5be0); }
+
+  /* privacy */
+  .priv { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; margin-top: 54px; align-items: start; }
+  .checks { list-style: none; padding: 0; margin: 0; }
+  .checks li { display: flex; align-items: center; gap: 16px; padding: 20px 0; border-bottom: 1px solid var(--line); font-size: 1.1rem; font-weight: 400; }
+  .checks li:first-child { border-top: 1px solid var(--line); }
+  .checks li::before { content: ""; width: 20px; height: 20px; border-radius: 50%; flex: none; background: rgba(47,123,255,.2) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'><path d='M5.5 10.5l3 3 6-7' fill='none' stroke='%237fb2ff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg>") center / 100% no-repeat; }
+
+  /* blog */
+  .sec-head { display: flex; justify-content: space-between; align-items: end; gap: 24px; flex-wrap: wrap; margin-bottom: 44px; } .sec-head .big { max-width: 16ch; }
+  .guides { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+
+  /* pricing */
+  .price-sec { border: 0; }
+  .price-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 56px; align-items: center; }
+  .price-card { padding: clamp(28px, 4vw, 44px); border-radius: 32px; background: #fff; color: #0a1433; box-shadow: 0 40px 80px rgba(3,10,60,.35); display: grid; gap: 22px; } .price-card .price small, .price-card ul { color: #4a5675; } .price-card li::before { color: #1d5be0; }
+  .price { display: flex; align-items: baseline; gap: 10px; } .price .num { font-size: clamp(4.4rem, 9vw, 6.6rem); line-height: .95; letter-spacing: -.06em; font-weight: 500; } .price small { color: var(--soft); font-size: 1.1rem; }
+  .price-card ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; color: var(--soft); font-weight: 300; } .price-card li::before { content: "✓"; color: var(--blue-light); margin-right: 12px; font-weight: 600; }
+
+  /* faq */
+  .faq-wrap { display: grid; grid-template-columns: .8fr 1.2fr; gap: 60px; align-items: start; }
+  .faq-wrap .big { max-width: 8ch; }
+  .faq { border-bottom: 1px solid var(--line); }
+  .faq:first-child { border-top: 1px solid var(--line); }
+  .faq summary { cursor: pointer; font-size: clamp(1.15rem, 1.8vw, 1.4rem); font-weight: 500; letter-spacing: -.025em; padding: 24px 0; list-style: none; display: flex; justify-content: space-between; gap: 20px; line-height: 1.25; }
+  .faq summary::-webkit-details-marker { display: none; } .faq summary::after { content: "+"; font-weight: 300; color: var(--blue-light); font-size: 1.8rem; line-height: 1; transition: transform .25s ease; }
+  .faq[open] summary::after { transform: rotate(45deg); } .faq p { color: var(--soft); padding-bottom: 26px; max-width: 60ch; font-weight: 300; }
+
+  /* final */
+  .final { text-align: center; padding-block: clamp(90px, 12vw, 170px); }
+  .final h2 { font-size: clamp(3.2rem, 9.4vw, 8.4rem); line-height: .96; letter-spacing: -.058em; max-width: 12ch; margin-inline: auto; }
+
+
+  /* alternating sections: full white and crazy blue */
+  .sec-light { --text: #0a1433; --soft: #3f4c6e; --muted: #6a7694; --line: rgba(10,20,51,.12); --line-soft: rgba(10,20,51,.08); background: #fff; color: var(--text); }
+  .sec-light .kicker { color: #1d5be0; }
+  .sec-light h2 em, .sec-light h3 em { color: #b97a12; }
+  .sec-light .btn-ghost { background: #f1f5ff; border-color: rgba(10,20,51,.14); color: #0a1433; backdrop-filter: none; }
+  .sec-light .btn-ghost:hover { background: #e4ecff; color: #0a1433; }
+  .sec-light .checks li::before { background-color: rgba(29,91,224,.12); }
+  .sec-light .pcard { background: #f4f7ff; border-color: rgba(10,20,51,.1); }
+  .sec-light .pcard:hover { border-color: rgba(29,91,224,.5); }
+  .sec-light .pbody h3 { color: #0a1433; }
+  .sec-light .ph { background: #e3eaf9; color: #6a7694; border-color: rgba(10,20,51,.08); }
+  .sec-blue { background: linear-gradient(118deg, #0a2cb0 0%, #1654e6 30%, #2f84ff 58%, #1448d4 82%, #0a2896 100%); color: #fff; --line: rgba(255,255,255,.22); --line-soft: rgba(255,255,255,.14); --muted: rgba(255,255,255,.7); --soft: rgba(255,255,255,.88); }
+  .sec-blue .kicker { color: #d6e6ff; }
+  .sec-blue .checks li::before, .sec-blue .faq summary::after { color: #fff; }
+  .final h2 { color: #0a1433; }
+  .final h2 em { color: #b97a12; }
+
+
+  .btn-xl { padding: 20px 46px; font-size: 1.15rem; }
+  .hero-cta { display: grid; justify-items: center; gap: 14px; }
+  .hero-cta-2 { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 12px; }
+  .gp { display: inline-block; line-height: 0; transition: transform .18s ease; } .gp:hover { transform: translateY(-2px); } .gp img { height: 50px; width: auto; display: block; }
+  .phone-img { width: 150%; max-width: none; margin-inline: -25% -10%; height: auto; filter: drop-shadow(0 40px 60px rgba(2,10,60,.45)); }
+  .sec-blue .price-card ul { color: #4a5675; } .sec-blue .price-card .price small { color: #4a5675; } .sec-blue .price-card .price .num { color: #0a1433; }
+  .final .cta-row { justify-content: center; }
+
+
+  .btn-white { background: #fff; color: #0a1433; box-shadow: 0 14px 34px rgba(0,10,60,.35); }
+  .btn-white:hover { background: #fff; color: #0a1433; box-shadow: 0 18px 44px rgba(0,10,60,.5); }
+
+  @media (max-width: 960px) {
+    .tools, .priv, .price-grid, .faq-wrap, .app-grid { grid-template-columns: 1fr; }
+    .app-grid { gap: 60px; }
+    .guides { grid-template-columns: 1fr; }
+    .rows li { grid-template-columns: 50px 1fr; gap: 6px 18px; } .rows li p { grid-column: 2; }
+    .rows { grid-template-columns: 1fr; } .phone-img { width: 100%; margin-inline: 0; }
+    .tool { min-height: 260px; }
+  }
+  @media (max-width: 560px) {
+    .hero { padding-top: 110px; }
+    .hero h1 { white-space: normal; font-size: clamp(3.1rem, 14.2vw, 4.6rem); line-height: .98; letter-spacing: -.055em; }
+    .hero h1 em { font-size: .74em; margin-top: .08em; }
+    .hero .lead { font-size: .98rem; }
+    .btn-xl { padding: 15px 34px; font-size: 1.02rem; }
+    .hero-cta-2 .btn-sm { padding: 10px 16px; font-size: .86rem; }
+    .gp img { height: 42px; }
+  }
+</style>

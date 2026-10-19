@@ -1,0 +1,190 @@
+---
+import "../styles/global.css";
+import { SITE } from "../lib/site";
+
+interface Props {
+  title: string;
+  description: string;
+  type?: "website" | "article";
+  jsonLd?: object[];
+  noindex?: boolean;
+  published?: string;
+  image?: string;
+}
+const { title, description, type = "website", jsonLd = [], noindex = false, published, image: imagePath = "/logo-mark.png" } = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site).toString();
+const image = new URL(imagePath, Astro.site).toString();
+const fullTitle = title.includes(SITE.name) ? title : `${title} | ${SITE.name}`;
+const path = Astro.url.pathname;
+const link = (href: string) => (path === href || path === href + "/" ? "page" : undefined);
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    <meta name="theme-color" content="#03050e" />
+    <link rel="icon" type="image/png" href="/logo-mark.png" />
+    <link rel="apple-touch-icon" href="/logo-mark.png" />
+
+    <meta property="og:site_name" content={SITE.name} />
+    <meta property="og:type" content={type} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={image} />
+    {published && <meta property="article:published_time" content={published} />}
+    <meta name="twitter:card" content={imagePath === "/logo-mark.png" ? "summary" : "summary_large_image"} />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={image} />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+    {jsonLd.map((d) => <script type="application/ld+json" set:html={JSON.stringify(d)} />)}
+  </head>
+  <body>
+    <div class="nav-shell">
+      <div class="nav">
+        <a class="brand" href="/"><img src="/logo-mark.png" alt="" width="34" height="34" />FreelanceDesk</a>
+        <nav class="nav-links" aria-label="Main">
+          <a href="/free-invoice-generator/" aria-current={link("/free-invoice-generator")}>Invoice generator</a>
+          <a href="/free-quotation-generator/" aria-current={link("/free-quotation-generator")}>Quotation generator</a>
+          <a href="/blog/" aria-current={path.startsWith("/blog") ? "page" : undefined}>Blog</a>
+          <a href="/free-invoice-generator/#signin" class="signin-link" id="nav-signin">Sign in</a>
+          <details class="acct-menu" id="nav-acct" hidden>
+            <summary><span class="acct-av" id="nav-av">A</span>Account</summary>
+            <div class="acct-panel">
+              <p class="acct-email" id="nav-email"></p>
+              <p class="acct-usage" id="nav-usage"></p>
+              <button type="button" id="nav-signout">Sign out</button>
+              <button type="button" id="nav-delete" class="danger">Delete my account</button>
+            </div>
+          </details>
+          <a class="btn btn-primary btn-sm" href={SITE.playUrl} rel="noopener">Get the app</a>
+        </nav>
+        <button type="button" class="menu-btn" id="menu-open" aria-label="Open menu" aria-expanded="false" aria-controls="fs-menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M4 8h16M4 16h16" /></svg>
+        </button>
+      </div>
+    </div>
+
+
+    <div class="fs-menu" id="fs-menu" hidden role="dialog" aria-modal="true" aria-label="Menu">
+      <div class="fs-top">
+        <a class="brand" href="/"><img src="/logo-mark.png" alt="" width="34" height="34" />FreelanceDesk</a>
+        <button type="button" class="menu-btn" id="menu-close" aria-label="Close menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
+        </button>
+      </div>
+      <nav class="fs-links" aria-label="Menu">
+        <a href="/free-invoice-generator/">Invoice generator</a>
+        <a href="/free-quotation-generator/">Quotation generator</a>
+        <a href="/blog/">Blog</a>
+        <a href="/free-invoice-generator/#signin" id="m-signin">Sign in</a>
+        <button type="button" id="m-signout" class="fs-out" hidden>Sign out</button>
+      </nav>
+      <div class="fs-bottom">
+        <a class="fs-gp" href={SITE.playUrl} rel="noopener"><img src="/google-play-badge.svg" alt="Get it on Google Play" width="217" height="63" /></a>
+        <p>Private, offline invoicing for freelancers.</p>
+      </div>
+    </div>
+
+    <main><slot /></main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <div class="foot-grid">
+          <div>
+            <a class="brand foot-brand" href="/"><img src="/logo-mark.png" alt="" width="40" height="40" />FreelanceDesk</a>
+            <p style="margin-top:16px;max-width:34ch">{SITE.tagline}. Made by {SITE.company}.</p>
+          </div>
+          <div>
+            <h4>Free tools</h4>
+            <a href="/free-invoice-generator/">Invoice generator</a>
+            <a href="/free-quotation-generator/">Quotation generator</a>
+            <a href="/blog/">Freelance blog</a>
+          </div>
+          <div>
+            <h4>The app</h4>
+            <a href={SITE.playUrl} rel="noopener">Google Play</a>
+            <a href="/app-privacy/">App privacy policy</a>
+            <a href="/app-terms/">App terms</a>
+          </div>
+          <div>
+            <h4>Website</h4>
+            <a href="/privacy/">Privacy</a>
+            <a href="/terms/">Terms</a>
+            <a href={`mailto:${SITE.email}`}>{SITE.email}</a>
+          </div>
+        </div>
+        <div class="foot-bottom">
+          <span>© 2026 {SITE.company}. All rights reserved.</span>
+          <span>FreelanceDesk is an invoicing tool, not tax or legal advice.</span>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      import { supabase } from "../lib/supabase";
+
+      const $ = (id: string) => document.getElementById(id) as HTMLElement;
+      const fs = $("fs-menu");
+      const setMenu = (open: boolean) => {
+        fs.hidden = !open;
+        $("menu-open").setAttribute("aria-expanded", String(open));
+        document.documentElement.style.overflow = open ? "hidden" : "";
+      };
+      $("menu-open").addEventListener("click", () => setMenu(true));
+      $("menu-close").addEventListener("click", () => setMenu(false));
+      fs.addEventListener("click", (e) => { if ((e.target as HTMLElement).closest("a")) setMenu(false); });
+      document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !fs.hidden) setMenu(false); });
+      window.matchMedia("(min-width: 881px)").addEventListener("change", (e) => { if (e.matches) setMenu(false); });
+      const signin = $("nav-signin"), menu = $("nav-acct") as HTMLDetailsElement;
+      const mSignin = $("m-signin"), mSignout = $("m-signout");
+
+      async function usageText() {
+        if (!supabase) return "";
+        const { data, error } = await supabase.rpc("get_usage");
+        if (error || !data) return "";
+        const lim = Number(data.limit) || 2;
+        const inv = Math.max(0, lim - Number(data.invoice || 0)), quo = Math.max(0, lim - Number(data.quotation || 0));
+        return `Free left: ${inv} of ${lim} invoices, ${quo} of ${lim} quotations`;
+      }
+      async function render(session: any) {
+        const on = !!session;
+        signin.hidden = on; menu.hidden = !on; mSignin.hidden = on; mSignout.hidden = !on;
+        if (on) {
+          const email = session.user?.email ?? "";
+          $("nav-email").textContent = email;
+          $("nav-av").textContent = (email[0] || "A").toUpperCase();
+          $("nav-usage").textContent = "";
+          usageText().then((t) => { $("nav-usage").textContent = t; });
+        } else { menu.open = false; }
+      }
+      if (supabase) {
+        supabase.auth.getSession().then(({ data }) => render(data.session));
+        supabase.auth.onAuthStateChange((_e, s) => { render(s); });
+        const out = async () => { await supabase!.auth.signOut(); menu.open = false; };
+        $("nav-signout").addEventListener("click", out);
+        mSignout.addEventListener("click", async () => { await out(); setMenu(false); });
+        let armed = 0;
+        $("nav-delete").addEventListener("click", async (e) => {
+          const b = e.currentTarget as HTMLButtonElement;
+          if (Date.now() - armed > 6000) { armed = Date.now(); b.textContent = "Click again to erase your account"; setTimeout(() => (b.textContent = "Delete my account"), 6000); return; }
+          const { error } = await supabase!.rpc("delete_my_account");
+          b.textContent = "Delete my account";
+          if (!error) await supabase!.auth.signOut();
+          menu.open = false;
+        });
+        document.addEventListener("click", (e) => { if (menu.open && !menu.contains(e.target as Node)) menu.open = false; });
+      }
+    </script>
+  </body>
+</html>

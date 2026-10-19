@@ -1,0 +1,43 @@
+---
+import Base from "../layouts/Base.astro";
+
+interface Props { title: string; description: string; text: string; effective: string; note: string; email: string }
+const { title, description, text, effective, note, email } = Astro.props;
+
+// The app's legal text is plain: blocks separated by blank lines, numbered
+// headings ("1. Summary") followed by their paragraph on the next line.
+const blocks = text.split("\n\n").map((b) => b.trim()).filter(Boolean);
+const parts = blocks
+  .map((b) => {
+    const nl = b.indexOf("\n");
+    const first = nl === -1 ? b : b.slice(0, nl);
+    const rest = nl === -1 ? "" : b.slice(nl + 1).trim();
+    const isHeading = /^\d+\.\s/.test(first) && rest.length > 0;
+    return isHeading ? { h: first, p: rest } : { h: "", p: b };
+  })
+  // the leading "Effective date: ..." line is shown in the page header instead
+  .filter((x) => !/^Effective date:/i.test(x.p));
+---
+<Base title={title} description={description}>
+  <section class="section" style="padding-top:56px">
+    <div class="wrap">
+      <div class="prose">
+        <span class="eyebrow">FreelanceDesk app</span>
+        <h1 style="font-size:clamp(2rem,5vw,3rem);margin:10px 0 6px">{title}</h1>
+        <p style="color:var(--muted)">Effective {effective}</p>
+        <p class="legal-note">{note}</p>
+        {parts.map((x) => (
+          <>
+            {x.h && <h2>{x.h}</h2>}
+            <p>{x.p}</p>
+          </>
+        ))}
+        <p style="margin-top:2em">Questions: <a href={`mailto:${email}`}>{email}</a></p>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style is:global>
+  .legal-note { padding: 14px 18px; border-radius: 14px; background: var(--surface-2); border: 1px solid var(--line); font-size: .95rem !important; }
+</style>
