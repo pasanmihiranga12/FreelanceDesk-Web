@@ -12,6 +12,7 @@
     "@astrojs/sitemap": "^3.7.4",
     "@supabase/supabase-js": "^2.118.0",
     "astro": "^7.4.0",
+    "gsap": "^3.15.0",
     "jspdf": "^4.2.1"
   }
 }

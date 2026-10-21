@@ -59,14 +59,17 @@ export const prettyDate = (iso: string) => {
 };
 
 // Characters outside Latin-1 would print as garbage with the built-in fonts.
-const clean = (s: string) => (s || "").replace(/[^\x09\x0A\x20-\x7E\xA0-\xFF€]/g, "?");
+export const clean = (s: string) => (s || "").replace(/[^\x09\x0A\x20-\x7E\xA0-\xFF€]/g, "?");
 
 type RGB = [number, number, number];
-export type TemplateId = "classic" | "minimal" | "modern";
+export type TemplateId = "classic" | "minimal" | "modern" | "dusk" | "pop";
+type ThemedId = "classic" | "minimal" | "modern";   // dusk and pop are drawn in pdf-fancy.ts
 export const TEMPLATES: { id: TemplateId; name: string; blurb: string }[] = [
   { id: "classic", name: "Classic", blurb: "Navy and gold, serif title" },
   { id: "minimal", name: "Minimal", blurb: "Black and white, lots of air" },
   { id: "modern", name: "Modern", blurb: "Blue header band and table" },
+  { id: "dusk", name: "Dusk", blurb: "Navy night with a golden sun" },
+  { id: "pop", name: "Pop", blurb: "Bold blocks and hard shadows" },
 ];
 
 interface Theme {
@@ -76,19 +79,32 @@ interface Theme {
   totalBox: boolean;        // filled total box
   titleFont: "times" | "helvetica"; titleStyle: "bold" | "normal"; titleSize: number;
   doubleRule: boolean;
+  pageBg?: RGB;             // fill every page (dark templates)
+  gradient?: [RGB, RGB];    // header band fades from the first colour to the second
+  totalColor?: RGB;         // colour of the big total
 }
 const RED: RGB = [178, 59, 59];
-const THEMES: Record<TemplateId, Theme> = {
+const THEMES: Record<ThemedId, Theme> = {
   classic: { ink: [20, 33, 61], accent: [176, 141, 87], label: [176, 141, 87], muted: [138, 131, 112], line: [236, 231, 221], due: [138, 74, 31], band: false, tableFill: false, totalBox: false, titleFont: "times", titleStyle: "bold", titleSize: 30, doubleRule: true },
   minimal: { ink: [17, 17, 17], accent: [17, 17, 17], label: [140, 140, 140], muted: [120, 120, 120], line: [225, 225, 225], due: [17, 17, 17], band: false, tableFill: false, totalBox: false, titleFont: "helvetica", titleStyle: "normal", titleSize: 34, doubleRule: false },
   modern: { ink: [10, 20, 51], accent: [29, 91, 224], label: [29, 91, 224], muted: [102, 112, 140], line: [228, 233, 245], due: [29, 91, 224], band: true, tableFill: true, totalBox: true, titleFont: "helvetica", titleStyle: "bold", titleSize: 26, doubleRule: false },
 };
 
 export function buildPdf(d: DocData, template: TemplateId = "classic"): jsPDF {
-  let T = THEMES[template] ?? THEMES.classic;
+  let T = THEMES[template as ThemedId] ?? THEMES.classic;
   const custom = hexToRgb(d.accent || "");
   if (custom) T = { ...T, accent: custom, label: custom, due: custom };
   const doc = new jsPDF({ unit: "mm", format: "a4" });
+  const paint = () => { if (T.pageBg) { doc.setFillColor(...T.pageBg); doc.rect(0, 0, 210, 297, "F"); } };
+  const gradientRect = (x: number, y: number, w: number, h: number, c1: RGB, c2: RGB) => {
+    const steps = 90, sw = w / steps;
+    for (let i = 0; i < steps; i++) {
+      const k = i / (steps - 1);
+      doc.setFillColor(Math.round(c1[0] + (c2[0] - c1[0]) * k), Math.round(c1[1] + (c2[1] - c1[1]) * k), Math.round(c1[2] + (c2[2] - c1[2]) * k));
+      doc.rect(x + i * sw, y, sw + 0.35, h, "F");
+    }
+  };
+  paint();
   const W = 210, M = 18, R = W - M;
   const isInvoice = d.kind === "invoice";
   const t = totals(d);
@@ -123,7 +139,12 @@ export function buildPdf(d: DocData, template: TemplateId = "classic"): jsPDF {
 
   if (T.band) {
     const bandH = Math.max(46, ly + 6 + fromLines.length * 4.6 + 6);
-    doc.setFillColor(...T.accent); doc.rect(0, 0, W, bandH, "F");
+    if (T.gradient) {
+      gradientRect(0, 0, W, bandH, T.gradient[0], T.gradient[1]);
+      doc.setFillColor(255, 255, 255); doc.triangle(0, bandH + 0.4, W, bandH + 0.4, W, bandH - 14, "F");   // slanted lower edge
+    } else {
+      doc.setFillColor(...T.accent); doc.rect(0, 0, W, bandH, "F");
+    }
     if (lh) {
       doc.setFillColor(255, 255, 255); doc.roundedRect(M - 2, 10, lw + 4, lh + 4, 2, 2, "F");
       doc.addImage(d.logo!.data, "PNG", M, 12, lw, lh);
@@ -191,7 +212,7 @@ export function buildPdf(d: DocData, template: TemplateId = "classic"): jsPDF {
   for (const it of items) {
     const lines: string[] = doc.splitTextToSize(clean(it.name), 84);
     const h = Math.max(lines.length * 4.8, 6) + 4;
-    if (y + h > 262) { footer(); doc.addPage(); y = 24; header(); }
+    if (y + h > 262) { footer(); doc.addPage(); paint(); y = 24; header(); }
     doc.setFont("helvetica", "normal"); doc.setFontSize(10); color(T.ink);
     doc.text(lines, M, y);
     color(T.muted);
@@ -204,7 +225,7 @@ export function buildPdf(d: DocData, template: TemplateId = "classic"): jsPDF {
   }
 
   // ── totals ──
-  if (y > 226) { footer(); doc.addPage(); y = 24; }
+  if (y > 226) { footer(); doc.addPage(); paint(); y = 24; }
   y += 6;
   const row = (name: string, value: string, c: RGB = T.muted) => {
     doc.setFont("helvetica", "normal"); doc.setFontSize(10); color(T.muted); doc.text(name, 128, y);
@@ -215,7 +236,8 @@ export function buildPdf(d: DocData, template: TemplateId = "classic"): jsPDF {
   if (d.taxRate > 0) row(`Tax (${d.taxRate}%)`, money(t.tax, d.currency));
   y += 1.5;
   if (T.totalBox) {
-    doc.setFillColor(...T.accent); doc.roundedRect(122, y - 1, R - 122, 14, 2, 2, "F");
+    if (T.gradient) gradientRect(122, y - 1, R - 122, 14, T.gradient[0], T.gradient[1]);
+    else { doc.setFillColor(...T.accent); doc.roundedRect(122, y - 1, R - 122, 14, 2, 2, "F"); }
     doc.setFont("helvetica", "bold"); doc.setFontSize(8); doc.setTextColor(214, 228, 255);
     doc.text(isInvoice ? "TOTAL DUE" : "ESTIMATED TOTAL", 126, y + 8);
     doc.setFontSize(14); doc.setTextColor(255, 255, 255);
@@ -226,14 +248,14 @@ export function buildPdf(d: DocData, template: TemplateId = "classic"): jsPDF {
     y += 8;
     doc.setFont("helvetica", "bold"); doc.setFontSize(8.5); color(T.ink);
     doc.text(isInvoice ? "TOTAL DUE" : "ESTIMATED TOTAL", 122, y);
-    doc.setFont(template === "classic" ? "times" : "helvetica", "bold"); doc.setFontSize(19); doc.text(money(t.total, d.currency), R, y + 0.5, { align: "right" });
+    doc.setFont(template === "classic" ? "times" : "helvetica", "bold"); doc.setFontSize(19); if (T.totalColor) color(T.totalColor); doc.text(money(t.total, d.currency), R, y + 0.5, { align: "right" });
     y += 14;
   }
 
   // ── notes / payment ──
   const block = (title: string, body: string) => {
     const lines: string[] = doc.splitTextToSize(clean(body), 120);
-    if (y + lines.length * 4.8 + 12 > 278) { footer(); doc.addPage(); y = 24; }
+    if (y + lines.length * 4.8 + 12 > 278) { footer(); doc.addPage(); paint(); y = 24; }
     label(title, M, y);
     doc.setFont("helvetica", "normal"); doc.setFontSize(9.5); color(T.ink);
     doc.text(lines, M, y + 6);

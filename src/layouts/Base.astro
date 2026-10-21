@@ -29,6 +29,15 @@ const link = (href: string) => (path === href || path === href + "/" ? "page" : 
     <link rel="canonical" href={canonical} />
     {noindex && <meta name="robots" content="noindex, nofollow" />}
     <meta name="theme-color" content="#03050e" />
+    <script is:inline>
+      (function () {
+        var d = document.documentElement;
+        d.classList.add("js");
+        if (matchMedia("(prefers-reduced-motion: reduce)").matches) { d.classList.add("motion-ready"); return; }
+        try { if (sessionStorage.getItem("pt")) { d.classList.add("pt-in"); sessionStorage.removeItem("pt"); } } catch (e) {}
+        setTimeout(function () { d.classList.add("motion-ready"); d.classList.remove("pt-in"); }, 1600);   // never leave anything hidden
+      })();
+    </script>
     <link rel="icon" type="image/png" href="/logo-mark.png" />
     <link rel="apple-touch-icon" href="/logo-mark.png" />
 
@@ -51,6 +60,8 @@ const link = (href: string) => (path === href || path === href + "/" ? "page" : 
     {jsonLd.map((d) => <script type="application/ld+json" set:html={JSON.stringify(d)} />)}
   </head>
   <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <div class="pt" aria-hidden="true"><img src="/logo-mark.png" alt="" width="72" height="72" /></div>
     <div class="nav-shell">
       <div class="nav">
         <a class="brand" href="/"><img src="/logo-mark.png" alt="" width="34" height="34" /><span class="wm-t">Freelance<b>Desk</b></span></a>
@@ -99,7 +110,7 @@ const link = (href: string) => (path === href || path === href + "/" ? "page" : 
       </div>
     </div>
 
-    <main><slot /></main>
+    <main id="main"><slot /></main>
 
     <footer class="site-footer">
       <div class="wrap">
@@ -196,6 +207,9 @@ const link = (href: string) => (path === href || path === href + "/" ? "page" : 
         });
         document.addEventListener("click", (e) => { if (menu.open && !menu.contains(e.target as Node)) menu.open = false; });
       }
+    </script>
+    <script>
+      import "../scripts/motion";
     </script>
   </body>
 </html>

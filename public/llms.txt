@@ -1,0 +1,19 @@
+# FreelanceDesk
+
+> FreelanceDesk is a private, offline Android app for freelancers to create invoices and quotations, manage clients and orders, record payments and see their income. The website also has a free invoice generator and a free quotation generator.
+
+Publisher: LYGENEX Labs. Contact: media@lygenexlabs.com
+
+## Key pages
+- [Free invoice generator](https://freelancedesk.lygenexlabs.com/free-invoice-generator/): make a PDF invoice in the browser, 2 free per month
+- [Free quotation generator](https://freelancedesk.lygenexlabs.com/free-quotation-generator/): make a PDF quotation in the browser, 2 free per month
+- [Blog](https://freelancedesk.lygenexlabs.com/blog/): guides on invoicing, pricing, getting paid and starting as a freelancer
+- [Help center](https://freelancedesk.lygenexlabs.com/help/): how to use the app
+- [What's new](https://freelancedesk.lygenexlabs.com/whats-new/): release notes
+- [Contact](https://freelancedesk.lygenexlabs.com/contact/)
+
+## Facts
+- App: Android, on Google Play. iPhone version: waitlist at /app-store/
+- Price: 7-day free trial, then a monthly subscription billed by Google Play
+- 20 invoice templates and 6 quotation templates in the app
+- Data stays on the phone: no account, no ads, no tracking in the app

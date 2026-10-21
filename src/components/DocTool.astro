@@ -117,6 +117,7 @@ const noun = isInvoice ? "invoice" : "quotation";
     </form>
 
     <aside class="dt-side">
+      <p class="dt-tpl-note">Select your template</p>
       <div class="dt-tpls" id="dt-tpls" role="radiogroup" aria-label="Template"></div>
       <div class="dt-paper" id="dt-preview" aria-label="Live preview"></div>
       <button type="button" id="dt-download" class="btn btn-primary dt-download">Download PDF</button>
@@ -185,6 +186,7 @@ const noun = isInvoice ? "invoice" : "quotation";
 <script>
   import { supabase, supabaseConfigured } from "../lib/supabase";
   import { buildPdf, totals, money, prettyDate, TEMPLATES, type DocData, type DocKind, type TemplateId } from "../lib/pdf";
+  import { buildFancyPdf, isFancy } from "../lib/pdf-fancy";
 
   const root = document.getElementById("doctool") as HTMLElement;
   const kind = root.dataset.kind as DocKind;
@@ -357,6 +359,7 @@ const noun = isInvoice ? "invoice" : "quotation";
         <div><small>${isInvoice ? "Invoice date" : "Quotation date"}</small><b>${esc(prettyDate(d.date))}</b></div>
         <div><small>${isInvoice ? "Due date" : "Valid until"}</small><b class="pv-due">${esc(prettyDate(d.due))}</b></div>
       </div>
+      <div class="pv-hero"><small>${isInvoice ? "Amount due" : "Estimated total"}</small><strong>${money(t.total, d.currency)}</strong></div>
       <table class="pv-table"><thead><tr><th>Description</th><th>Qty</th><th>Rate</th><th>Amount</th></tr></thead><tbody>
         ${rows.length ? rows.map((r) => `<tr><td>${esc(r.name)}</td><td>${r.qty}</td><td>${r.rate.toLocaleString("en-US", { minimumFractionDigits: 2 })}</td><td><b>${(r.qty * r.rate).toLocaleString("en-US", { minimumFractionDigits: 2 })}</b></td></tr>`).join("") : `<tr><td class="pv-empty" colspan="4">Add your first item</td></tr>`}
       </tbody></table>
@@ -534,7 +537,7 @@ const noun = isInvoice ? "invoice" : "quotation";
 
     dl.disabled = true; setMsg("Preparing your PDF…");
     try {
-      const pdf = buildPdf(d, tpl);                      // build first, so a failure never costs a free document
+      const pdf = isFancy(tpl) ? buildFancyPdf(d, tpl) : buildPdf(d, tpl);                      // build first, so a failure never costs a free document
       const { data, error } = await supabase.rpc("consume_credit", { p_kind: kind });
       if (error || !data) throw error || new Error("no answer");
       if (!data.allowed) {
@@ -640,8 +643,46 @@ const noun = isInvoice ? "invoice" : "quotation";
   .dt-paper[data-accent][data-tpl="modern"] .pv-top, .dt-paper[data-accent][data-tpl="modern"] .pv-table th, .dt-paper[data-accent][data-tpl="modern"] .pv-total { background: var(--ac); }
   .dt-paper[data-accent][data-tpl="modern"] .pv-title em, .dt-paper[data-accent][data-tpl="modern"] .pv-from span { color: rgba(255,255,255,.8); }
 
+  /* app-style looks */
+  .sw-dusk::after { content: ""; position: absolute; left: 5px; right: 5px; bottom: 6px; height: 6px; border-radius: 2px; background: linear-gradient(90deg, #ffbe46, #ff7040); }
+  .sw-pop { background: #fff4d6 !important; } .sw-pop::before { content: ""; position: absolute; left: 5px; top: 7px; width: 22px; height: 8px; background: #ffd23f; }
+  .sw-pop::after { content: ""; position: absolute; left: 5px; right: 5px; bottom: 7px; height: 9px; background: #ff6fb1; border: 1.5px solid #0b0b0b; box-shadow: 2px 2px 0 #0b0b0b; }
+  .dt-paper[data-tpl="dusk"] { background: linear-gradient(180deg, #08184e, #030719); color: #fff; position: relative; overflow: hidden; }
+  .dt-paper[data-tpl="dusk"] .pv-title strong { font: 800 28px/1 "Plus Jakarta Sans", Helvetica, Arial, sans-serif; letter-spacing: -.02em; color: #ffd05a; } .dt-paper[data-tpl="dusk"] .pv-title em { color: #fff; letter-spacing: .1em; }
+  .dt-paper[data-tpl="dusk"] .pv-from span, .dt-paper[data-tpl="dusk"] .pv-meta span { color: #aabae2; }
+  .dt-paper[data-tpl="dusk"] .pv-rule { display: none; }
+  .dt-paper[data-tpl="dusk"] .pv-meta { margin-top: 12px; } .dt-paper[data-tpl="dusk"] .pv-meta > div { background: #0f1c4e; border: 1px solid #2e4288; border-top: 2px solid #ffd05a; border-radius: 10px; padding: 8px 10px; }
+  .dt-paper[data-tpl="dusk"] .pv-meta small, .dt-paper[data-tpl="dusk"] .pv-note small { color: #7082b8; } .dt-paper[data-tpl="dusk"] .pv-due { color: #ffd05a; }
+  .dt-paper[data-tpl="dusk"] .pv-table th { color: #7082b8; border-bottom: 0; } .dt-paper[data-tpl="dusk"] .pv-table td { color: #aabae2; border-bottom: 0; background: #0c163e; } .dt-paper[data-tpl="dusk"] .pv-table td:first-child { color: #fff; border-radius: 8px 0 0 8px; padding-left: 8px; } .dt-paper[data-tpl="dusk"] .pv-table td:last-child { border-radius: 0 8px 8px 0; padding-right: 8px; } .dt-paper[data-tpl="dusk"] .pv-table td b { color: #ffd05a; }
+  .dt-paper[data-tpl="dusk"] .pv-table { border-collapse: separate; border-spacing: 0 3px; }
+  .dt-paper[data-tpl="dusk"] .pv-totals div { color: #aabae2; } .dt-paper[data-tpl="dusk"] .pv-total { background: linear-gradient(90deg, #ffbe46, #ff7040); color: #280e04 !important; border: 0; border-radius: 6px; padding: 8px 10px; } .dt-paper[data-tpl="dusk"] .pv-total strong { font-family: "Plus Jakarta Sans", Helvetica, Arial, sans-serif; font-size: 15px; }
+  .dt-paper[data-tpl="dusk"] .pv-foot { border-top-color: #243a82; color: #7082b8; }
+  .dt-paper[data-tpl="dusk"] .pv-logo { background: #fff; padding: 4px 6px; border-radius: 5px; }
+  .dt-paper[data-tpl="pop"] { background: #fff4d6 radial-gradient(#d6c69c 1px, transparent 1.2px) 0 0 / 14px 14px; color: #0b0b0b; }
+  .dt-paper[data-tpl="pop"] .pv-from b { display: inline-block; background: #fff; border: 2px solid #0b0b0b; box-shadow: 3px 3px 0 #0b0b0b; padding: 4px 9px; font-size: 11px; text-transform: uppercase; }
+  .dt-paper[data-tpl="pop"] .pv-from span { color: #0b0b0b; margin-top: 8px; }
+  .dt-paper[data-tpl="pop"] .pv-title strong { display: inline-block; background: #ffd23f; padding: 2px 8px; font: 900 26px/1.1 "Plus Jakarta Sans", Helvetica, Arial, sans-serif; letter-spacing: -.03em; } .dt-paper[data-tpl="pop"] .pv-title em { background: #ff6fb1; border: 2px solid #0b0b0b; box-shadow: 2px 2px 0 #0b0b0b; padding: 2px 7px; color: #0b0b0b; margin-top: 8px; display: inline-block; }
+  .dt-paper[data-tpl="pop"] .pv-rule { display: none; }
+  .dt-paper[data-tpl="pop"] .pv-meta { margin-top: 12px; } .dt-paper[data-tpl="pop"] .pv-meta > div { border: 2px solid #0b0b0b; box-shadow: 3px 3px 0 #0b0b0b; padding: 7px 9px; } .dt-paper[data-tpl="pop"] .pv-meta > div:nth-child(1) { background: #58a6ff; } .dt-paper[data-tpl="pop"] .pv-meta > div:nth-child(2) { background: #ffd23f; } .dt-paper[data-tpl="pop"] .pv-meta > div:nth-child(3) { background: #7ef0c0; }
+  .dt-paper[data-tpl="pop"] .pv-meta small, .dt-paper[data-tpl="pop"] .pv-meta span, .dt-paper[data-tpl="pop"] .pv-due, .dt-paper[data-tpl="pop"] .pv-note small { color: #0b0b0b; }
+  .dt-paper[data-tpl="pop"] .pv-table { background: #fff; border: 2px solid #0b0b0b; box-shadow: 3px 3px 0 #0b0b0b; } .dt-paper[data-tpl="pop"] .pv-table th { background: #0b0b0b; color: #ffd23f; border: 0; padding: 7px 6px; } .dt-paper[data-tpl="pop"] .pv-table td { color: #0b0b0b; border-bottom: 1.5px solid #0b0b0b; padding-inline: 6px; } .dt-paper[data-tpl="pop"] .pv-table td:first-child { color: #0b0b0b; font-weight: 700; }
+  .dt-paper[data-tpl="pop"] .pv-totals div { color: #0b0b0b; font-weight: 700; } .dt-paper[data-tpl="pop"] .pv-total { background: #ff6fb1; border: 2px solid #0b0b0b; box-shadow: 3px 3px 0 #0b0b0b; padding: 8px 10px; } .dt-paper[data-tpl="pop"] .pv-total strong { font-family: "Plus Jakarta Sans", Helvetica, Arial, sans-serif; font-size: 15px; }
+  .dt-paper[data-tpl="pop"] .pv-foot { border-top: 0; color: #0b0b0b; font-weight: 700; }
+  .dt-paper[data-tpl="pop"] .pv-logo { background: #fff; padding: 4px 6px; border: 2px solid #0b0b0b; }
+
+  .dt-paper[data-accent][data-tpl="dusk"] .pv-table td b, .dt-paper[data-accent][data-tpl="dusk"] .pv-title em, .dt-paper[data-accent][data-tpl="dusk"] .pv-due { color: var(--ac); }
+  .dt-paper[data-accent][data-tpl="pop"] .pv-title strong, .dt-paper[data-accent][data-tpl="pop"] .pv-meta > div:nth-child(2) { background: var(--ac); }
+  .dt-paper[data-accent][data-tpl="pop"] .pv-title em, .dt-paper[data-accent][data-tpl="pop"] .pv-due { color: #0b0b0b; }
+
+  .dt-tpl-note { margin: 0 0 8px; font-size: 1rem; font-weight: 600; letter-spacing: -.02em; color: #fff; }
+
+  .pv-hero { display: none; }
+  .dt-paper[data-tpl="dusk"] .pv-hero { display: flex; justify-content: space-between; align-items: center; margin: 0 0 12px; padding: 10px 14px; border: 1px solid #ffd05a; border-radius: 12px; background: #0d1842; }
+  .dt-paper[data-tpl="dusk"] .pv-hero small { color: #ffd05a; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; font-size: 8px; } .dt-paper[data-tpl="dusk"] .pv-hero strong { color: #ffd05a; font: 800 17px "Plus Jakarta Sans", Helvetica, Arial, sans-serif; }
+  .dt-paper[data-tpl="dusk"] .pv-table td:first-child { box-shadow: inset 3px 0 0 #ffd05a; }
+
   /* template picker + looks */
-  .dt-tpls { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 14px; }
+  .dt-tpls { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
   .dt-tpl { display: grid; gap: 6px; justify-items: center; align-content: start; padding: 10px 6px 9px; border-radius: 14px; background: #08122e; border: 1px solid rgba(127,178,255,.28); color: var(--soft); font: inherit; font-size: .74rem; cursor: pointer; text-decoration: none; text-align: center; line-height: 1.2; }
   .dt-tpl b { font-weight: 500; } .dt-tpl:hover { border-color: rgba(127,178,255,.5); color: #fff; }
   .dt-tpl.on { border-color: #4a93ff; background: rgba(47,123,255,.2); color: #fff; }
