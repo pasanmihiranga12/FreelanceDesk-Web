@@ -69,6 +69,8 @@ const jsonLd = [
             <a class="btn btn-ghost btn-sm" href={SITE.playUrl} rel="noopener">Get the app</a>
           </p>
         </div>
+
+        <p class="post-reads" id="post-reads" data-slug={post.slug} hidden></p>
       </div>
     </div>
   </article>
@@ -86,7 +88,45 @@ const jsonLd = [
   </section>
 </Base>
 
+<script>
+  // Read counter: shows how many people have read this post. It stores one total per post
+  // (nothing about who read it) and counts each browser once. Set MIN_SHOWN higher to hide
+  // the number until a post has that many reads.
+  import { supabase } from "../../lib/supabase";
+
+  const MIN_SHOWN = 1;
+  const el = document.getElementById("post-reads");
+  const slug = el?.dataset.slug;
+
+  const show = (n: number) => {
+    if (!el || !Number.isFinite(n) || n < MIN_SHOWN) return;
+    el.textContent = `${n.toLocaleString("en-US")} ${n === 1 ? "read" : "reads"}`;
+    el.hidden = false;
+  };
+
+  async function run() {
+    if (!el || !slug || !supabase) return;
+    const key = `read:${slug}`;
+    let counted = false;
+    try { counted = localStorage.getItem(key) === "1"; } catch { /* storage blocked */ }
+
+    const first = await supabase.rpc("get_views", { p_slug: slug });
+    if (!first.error) show(Number(first.data));
+
+    if (counted) return;
+    // count a real read: the visitor stayed on the page for a few seconds
+    window.setTimeout(async () => {
+      const { data, error } = await supabase!.rpc("record_view", { p_slug: slug });
+      if (error) return;
+      try { localStorage.setItem(key, "1"); } catch { /* ignore */ }
+      show(Number(data));
+    }, 6000);
+  }
+  run();
+</script>
+
 <style is:global>
+  .post-reads { margin-top: 34px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: .94rem; font-weight: 500; }
   .post-head { margin-top: -80px; padding-block: clamp(130px, 12vw, 170px) 90px; background: linear-gradient(120deg, #0a2cb0 0%, #1654e6 45%, #2f84ff 100%); }
   .post-head .wrap { max-width: 920px; }
   .crumb { display: inline-block; margin-bottom: 26px; color: var(--muted); text-decoration: none; font-weight: 500; font-size: .94rem; }

@@ -2,9 +2,8 @@
 // Everything is skipped for visitors who ask for reduced motion, and the page works without it.
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { SplitText } from "gsap/SplitText";
 
-gsap.registerPlugin(ScrollTrigger, SplitText);
+gsap.registerPlugin(ScrollTrigger);
 
 const root = document.documentElement;
 const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -41,27 +40,19 @@ if (reduce) {
 } else {
   setupPageWipe();
 
-  // ── headlines: words rise out of a mask, line by line ───────────────
+  // ── headlines: a soft fade up, the whole heading at once ────────────
+  const HEAD_SCOPE = ".hero, .nf, .as-hero, .ct-hero, .wn-hero, .hc-hero, .blog-hero, .tp-hero, .hg-head, .post-head";
   const headings = $$("h1, .big, .final h2, .post-title, .hc-hero h1");
   headings.forEach((el) => {
-    SplitText.create(el, {
-      type: "lines",
-      mask: "lines",
-      maskClass: "split-mask",
-      autoSplit: true,
-      onSplit(self) {
-        return gsap.from(self.lines, {
-          yPercent: 115,
-          rotate: 2,
-          duration: 1.05,
-          ease: "power4.out",
-          stagger: 0.1,
-          delay: el.closest(".hero, .nf, .as-hero, .ct-hero, .wn-hero, .hc-hero, .blog-hero, .tp-hero, .hg-head, .post-head") ? 0.15 : 0,
-          scrollTrigger: el.closest(".hero, .nf, .as-hero, .ct-hero, .wn-hero, .hc-hero, .blog-hero, .tp-hero, .hg-head, .post-head")
-            ? undefined
-            : { trigger: el, start: "top 88%", once: true },
-        });
-      },
+    const inHead = !!el.closest(HEAD_SCOPE);
+    gsap.from(el, {
+      y: 22,
+      opacity: 0,
+      duration: 0.9,
+      ease: "power2.out",
+      delay: inHead ? 0.1 : 0,
+      clearProps: "transform",
+      scrollTrigger: inHead ? undefined : { trigger: el, start: "top 88%", once: true },
     });
   });
   ready();
@@ -72,12 +63,6 @@ if (reduce) {
     .from(".hero-tag, .kicker", { y: 16, opacity: 0, duration: 0.8, stagger: 0.05 }, 0.2)
     .from(".hero .lead, .nf .lead, .blog-hero .lead, .tp-hero .lead, .hc-hero .search", { y: 28, opacity: 0, duration: 0.9 }, 0.7)
     .from(".hero-cta > *, .hero-cta-2 > *, .nf-actions > *", { y: 30, opacity: 0, scale: 0.94, duration: 0.8, stagger: 0.09 }, 0.85);
-
-  // headline drifts up and fades as you scroll past the hero
-  const heroInner = document.querySelector<HTMLElement>(".hero-inner");
-  if (heroInner && wide) {
-    gsap.to(heroInner, { yPercent: -12, opacity: 0.25, ease: "none", scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: true } });
-  }
 
   // ── scroll reveals ──────────────────────────────────────────────────
   const groups = [
@@ -114,7 +99,7 @@ if (reduce) {
 
   // ── magnetic buttons (mouse only) ───────────────────────────────────
   if (fine) {
-    $$(".btn-primary, .btn-white, .nav-cta, .as-badge, .gp, .btn-ghost").forEach((el) => {
+    $$(".btn-primary, .btn-white, .nav-cta, .as-badge, .gp, .btn-ghost").filter((el) => !el.closest(".hero")).forEach((el) => {
       const xTo = gsap.quickTo(el, "x", { duration: 0.5, ease: "power3.out" });
       const yTo = gsap.quickTo(el, "y", { duration: 0.5, ease: "power3.out" });
       el.addEventListener("pointermove", (e) => {

@@ -21,7 +21,7 @@ export const guides: HelpGuide[] = [
 <p>FreelanceDesk keeps your clients, orders, invoices and payments on your phone. There is no account to create and nothing to sign in to. Here is the quickest way to get set up.</p>
 
 <h2>1. Install and open the app</h2>
-<p>Install FreelanceDesk from Google Play. The first time you open it, a short setup walks you through the basics. You can start with a 7-day free trial if you are a new subscriber.</p>
+<p>Install FreelanceDesk from Google Play. The first time you open it, a short setup walks you through the basics. It is free to start, with up to 5 orders. Upgrade to Premium any time for unlimited orders and more.</p>
 
 <h2>2. Fill in your business profile</h2>
 <p>Add the details that appear on your invoices:</p>
@@ -298,15 +298,21 @@ export const guides: HelpGuide[] = [
   },
   {
     slug: "subscription-and-trial",
-    title: "Subscription, free trial and cancelling",
-    description: "How the 7-day free trial and the monthly subscription work, and how to cancel in Google Play.",
+    title: "Free plan, Premium and cancelling",
+    description: "What the free plan includes, what Premium adds, how the free trial works, and how to cancel in Google Play.",
     group: "Your data and account",
     body: `
-<h2>The free trial</h2>
-<p>New subscribers can try FreelanceDesk free for 7 days. Google Play decides who is eligible for the trial.</p>
+<h2>The free plan</h2>
+<p>FreelanceDesk is free to download and use. The free plan includes unlimited clients, up to 5 orders, the Classic and Minimal invoice templates, payments, reminders, tax, backup and restore, CSV export and PIN lock.</p>
 
-<h2>The subscription</h2>
-<p>After the trial it costs $1.99 per month, billed by Google Play. Prices may vary by country. The subscription includes unlimited clients, orders, invoices and quotations.</p>
+<h2>Premium</h2>
+<p>Premium unlocks unlimited orders, all 20 invoice templates, quotations, e-signatures, income analytics, monthly and yearly recaps and fingerprint or face unlock. It costs $1.99 per month or $14.99 per year, billed by Google Play. Prices may vary by country.</p>
+
+<h2>The free trial</h2>
+<p>New Premium subscribers can try it free before the first payment. Google Play decides who is eligible for the trial.</p>
+
+<h2>If your subscription ends</h2>
+<p>Nothing is deleted. You keep all your clients, orders and invoices and can still view and share them. You can add new orders up to the free limit, and Premium features lock until you subscribe again.</p>
 
 <h2>Cancel</h2>
 <p>You manage the subscription in Google Play, not in the app:</p>
