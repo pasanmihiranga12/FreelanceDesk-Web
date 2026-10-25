@@ -226,7 +226,9 @@ h1 em, h2 em, h3 em, .serif-em { font-family: var(--serif); font-style: italic; 
 .sec-light .btn-ghost { background: #f1f5ff; border-color: rgba(10,20,51,.14); color: #0a1433; backdrop-filter: none; }
 .sec-blue { background: linear-gradient(118deg, #0a2cb0 0%, #1654e6 30%, #2f84ff 58%, #1448d4 82%, #0a2896 100%); color: #fff; --line: rgba(255,255,255,.22); --line-soft: rgba(255,255,255,.14); --muted: rgba(255,255,255,.7); --soft: rgba(255,255,255,.88); }
 .sec-blue .kicker { color: #d6e6ff; }
-.sec-night { background: radial-gradient(75% 90% at 82% -10%, rgba(47,132,255,.9) 0%, rgba(47,132,255,0) 62%), radial-gradient(60% 80% at 8% 112%, rgba(26,84,230,.78) 0%, rgba(26,84,230,0) 65%), linear-gradient(112deg, rgba(3,8,34,0) 24%, rgba(37,120,255,.45) 48%, rgba(3,8,34,0) 72%), linear-gradient(180deg, #030820 0%, #061548 50%, #0b2490 100%); color: #fff; }
+.sec-night { background: linear-gradient(180deg, rgba(10,36,144,0) calc(100% - 160px), #0a2490 100%), radial-gradient(75% 90% at 82% -10%, rgba(47,132,255,.9) 0%, rgba(47,132,255,0) 62%), radial-gradient(60% 80% at 8% 112%, rgba(26,84,230,.78) 0%, rgba(26,84,230,0) 65%), linear-gradient(112deg, rgba(3,8,34,0) 24%, rgba(37,120,255,.45) 48%, rgba(3,8,34,0) 72%), linear-gradient(180deg, #030820 0%, #061548 50%, #0b2490 100%); color: #fff; }
+/* a blue section right after a dark one fades up out of the dark one's bottom colour, so there is no hard seam */
+.sec-night + .sec-blue { background: linear-gradient(180deg, #0a2490 0%, rgba(10,36,144,0) 200px) top / 100% 200px no-repeat, linear-gradient(118deg, #0a2cb0 0%, #1654e6 30%, #2f84ff 58%, #1448d4 82%, #0a2896 100%); }
 
 /* ── motion ── */
 .js:not(.motion-ready) :is(h1, .big, .final h2, .post-title) { visibility: hidden; }

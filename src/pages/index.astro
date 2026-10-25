@@ -313,6 +313,18 @@ const latest = [...posts].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 
 </script>
 
 <style is:global>
+  /* ── HERO SIZE: edit these two numbers to fit a new image ───────────────────────────
+     --hero-mobile-height : how tall the hero is on a phone, as a multiple of the screen width.
+                            vw means "percent of screen width", so 285vw = 2.85 x the width.
+                            Full image = (image height / image width) x 100, e.g. 940 x 2856 -> 304vw.
+                            Lower number = shorter section (trims the empty top of the image).
+     --hero-mobile-top    : space above the text on a phone (below the logo bar).
+     --hero-tablet-height : hero height on a tablet held upright, also as a multiple of the screen width
+                            (140vw = 1.4 x the width, an image about 5:7). Text and buttons on tablets are
+                            sized in vw too, so every iPad looks the same, just bigger or smaller.
+     --hero-tablet-top    : space above the text on a tablet (17vw = 17% of the screen width). */
+  :root { --hero-mobile-height: 265vw; --hero-mobile-top: 130px; --hero-tablet-height: 140vw; --hero-tablet-top: 17vw; }
+
   /* hero: the supplied photo (phone on the right), so the copy sits on the left over a soft shade */
   .hero { position: relative; overflow: hidden; margin-top: -80px; min-height: 100svh; display: flex; align-items: center; padding: 104px 0 56px; background: #03050f url("/hero-bg.webp") right center / cover no-repeat; }
   .hero::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 90px; background: linear-gradient(180deg, transparent, rgba(3,5,15,.55)); pointer-events: none; }
@@ -321,11 +333,11 @@ const latest = [...posts].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 
   .hero-tag { font-size: 1rem; font-weight: 500; color: #e3edff; text-shadow: 0 1px 16px rgba(2,6,32,.55); }
   .hero .lead { color: #fff; text-shadow: 0 1px 18px rgba(2,6,32,.6); }
   .hero h1 { margin: 16px 0 0; font-size: clamp(2.8rem, min(6vw, 11.5vh), 7.4rem); line-height: 1; letter-spacing: -.055em; font-weight: 500; } .hero h1 em { display: block; margin-top: .06em; font-size: .78em; letter-spacing: -.025em; }
-  @media (min-width: 900px) {
+  @media (min-width: 900px) and (orientation: landscape) {
     .hero-inner { max-width: none; padding-inline: clamp(24px, 5.5vw, 110px); }
     .hero-inner > * { max-width: min(56%, 820px); }
   }
-  @media (min-width: 1380px) {
+  @media (min-width: 1380px) and (orientation: landscape) {
     .hero h1 { max-width: none; white-space: nowrap; font-size: clamp(3.4rem, min(5vw, 11vh), 7.4rem); }
   }
   .hero-foot { margin-top: clamp(20px, 3.4vh, 36px); display: grid; justify-items: start; gap: clamp(18px, 2.8vh, 28px); max-width: 600px; } .hero .lead { font-size: clamp(1rem, 1.25vw, 1.15rem); margin-inline: 0; }
@@ -336,7 +348,7 @@ const latest = [...posts].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 
 
 
   /* templates teaser */
-  .sec-night { background: radial-gradient(75% 90% at 82% -10%, rgba(47,132,255,.9) 0%, rgba(47,132,255,0) 62%), radial-gradient(60% 80% at 8% 112%, rgba(26,84,230,.78) 0%, rgba(26,84,230,0) 65%), linear-gradient(112deg, rgba(3,8,34,0) 24%, rgba(37,120,255,.45) 48%, rgba(3,8,34,0) 72%), linear-gradient(180deg, #030820 0%, #061548 50%, #0b2490 100%); color: #fff; }
+  .sec-night { background: linear-gradient(180deg, rgba(10,36,144,0) calc(100% - 160px), #0a2490 100%), radial-gradient(75% 90% at 82% -10%, rgba(47,132,255,.9) 0%, rgba(47,132,255,0) 62%), radial-gradient(60% 80% at 8% 112%, rgba(26,84,230,.78) 0%, rgba(26,84,230,0) 65%), linear-gradient(112deg, rgba(3,8,34,0) 24%, rgba(37,120,255,.45) 48%, rgba(3,8,34,0) 72%), linear-gradient(180deg, #030820 0%, #061548 50%, #0b2490 100%); color: #fff; }
   .tpl-scroll { margin-top: 50px; }
   .tpl-scroll { position: relative; }
   .tpl-track.drag { cursor: grabbing; user-select: none; }
@@ -494,16 +506,30 @@ const latest = [...posts].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 
     .rows { grid-template-columns: 1fr; } .phone-img { width: 100%; margin-inline: 0; }
     .tool { min-height: 260px; }
   }
-  @media (max-width: 899px) {
-    .hero { background-image: url("/mobile-hero.webp"); background-position: center; align-items: flex-start; padding: 150px 0 48px; }
+  @media (max-width: 899px), (orientation: portrait) {
+    /* the phone image is 940 x 2856; the section is a bit shorter than the full image (it trims the empty top), the phone stays whole */
+    .hero { background-image: url("/mobile-hero.webp"); background-position: center bottom; background-size: cover; align-items: flex-start; min-height: max(100svh, var(--hero-mobile-height)); padding: var(--hero-mobile-top) 0 48px; }
     .hero-inner { text-align: center; align-items: center; }
     .hero-inner > * { max-width: 100%; }
     .hero-foot { justify-items: center; } .hero-cta { justify-items: center; } .hero-cta-2 { justify-content: center; }
     .hero .lead { margin-inline: auto; }
     .hero h1 { white-space: normal; font-size: clamp(3.1rem, 14.2vw, 4.6rem); line-height: .98; letter-spacing: -.055em; }
   }
+  /* tablets held upright get their own image (public/tablet-hero.webp); until it exists they show a plain blue gradient.
+     Everything here is sized in vw, so a small iPad and a big iPad are the same picture at different scales. */
+  @media (min-width: 600px) and (max-width: 1100px) and (orientation: portrait) {
+    .hero { background-image: url("/tablet-hero.webp"), linear-gradient(160deg, #030820 0%, #0a2cb0 55%, #2f84ff 100%); background-size: cover; background-position: center bottom; min-height: var(--hero-tablet-height); padding: var(--hero-tablet-top) 0 4vw; }
+    .hero-tag { font-size: 2.1vw; }
+    .hero h1 { font-size: 8.6vw; }
+    .hero-foot { max-width: 76vw; margin-top: 3vw; gap: 3vw; }
+    .hero .lead { font-size: 2.6vw; }
+    .btn-xl { padding: 2.9vw 6.8vw; font-size: 2.7vw; }
+    .hero-cta { gap: 2.4vw; } .hero-cta-2 { gap: 1.6vw; }
+    .gp img { height: 7.3vw; }
+    .as-badge { height: 7.3vw; padding: 0 2.6vw 0 1.8vw; gap: 1.2vw; border-radius: 1.2vw; } .as-badge b { font-size: 2.5vw; } .as-badge small { font-size: 1vw; } .as-badge svg { width: 3.1vw; height: 3.4vw; }
+  }
   @media (max-width: 560px) {
-    .hero { padding-top: 150px; }
+    .hero { padding-top: var(--hero-mobile-top); }
     .hero h1 { font-size: clamp(3rem, 14.2vw, 4.6rem); line-height: .98; letter-spacing: -.055em; }
     .hero h1 em { font-size: .74em; margin-top: .08em; }
     .hero .lead { font-size: .98rem; }
