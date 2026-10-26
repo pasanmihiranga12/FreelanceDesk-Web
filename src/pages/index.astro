@@ -512,7 +512,9 @@ const latest = [...posts].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 
     .hero-inner { text-align: center; align-items: center; }
     .hero-inner > * { max-width: 100%; }
     .hero-foot { justify-items: center; } .hero-cta { justify-items: center; } .hero-cta-2 { justify-content: center; }
-    .hero .lead { margin-inline: auto; }
+    .hero .lead { margin: 0 auto; line-height: 1.5; }
+    .hero-foot { margin-top: 10px; gap: 4px; }
+    .hero-cta { gap: 10px; } .hero-cta-2 { gap: 8px; }
     .hero h1 { white-space: normal; font-size: clamp(3.1rem, 14.2vw, 4.6rem); line-height: .98; letter-spacing: -.055em; }
   }
   /* tablets held upright get their own image (public/tablet-hero.webp); until it exists they show a plain blue gradient.
@@ -533,8 +535,8 @@ const latest = [...posts].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 
     .hero h1 { font-size: clamp(3rem, 14.2vw, 4.6rem); line-height: .98; letter-spacing: -.055em; }
     .hero h1 em { font-size: .74em; margin-top: .08em; }
     .hero .lead { font-size: .98rem; }
-    .btn-xl { padding: 15px 34px; font-size: 1.02rem; }
+    .btn-xl { padding: 13px 30px; font-size: 1rem; }
     .hero-cta-2 .btn-sm { padding: 10px 16px; font-size: .86rem; }
-    .gp img { height: 42px; } .as-badge { height: 42px; padding: 0 14px 0 10px; } .as-badge b { font-size: 1.05rem; } .as-badge small { font-size: .5rem; } .as-badge svg { width: 19px; height: 21px; }
+    .gp img { height: 40px; } .as-badge { height: 40px; padding: 0 14px 0 10px; } .as-badge b { font-size: 1.05rem; } .as-badge small { font-size: .5rem; } .as-badge svg { width: 19px; height: 21px; }
   }
 </style>
