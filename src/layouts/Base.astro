@@ -66,6 +66,7 @@ const link = (href: string) => (path === href || path === href + "/" ? "page" : 
       <div class="nav">
         <a class="brand" href="/"><img src="/logo-mark.png" alt="" width="34" height="34" /><span class="wm-t">Freelance<b>Desk</b></span></a>
         <nav class="nav-links" aria-label="Main">
+          <a href="/#features">Features</a>
           <a href="/free-invoice-generator/" aria-current={link("/free-invoice-generator")}>Invoice generator</a>
           <a href="/free-quotation-generator/" aria-current={link("/free-quotation-generator")}>Quotation generator</a>
           <a href="/blog/" aria-current={path.startsWith("/blog") ? "page" : undefined}>Blog</a>
@@ -97,6 +98,7 @@ const link = (href: string) => (path === href || path === href + "/" ? "page" : 
         </button>
       </div>
       <nav class="fs-links" aria-label="Menu">
+        <a href="/#features">Features</a>
         <a href="/free-invoice-generator/">Invoice generator</a>
         <a href="/free-quotation-generator/">Quotation generator</a>
         <a href="/blog/">Blog</a>
@@ -121,6 +123,7 @@ const link = (href: string) => (path === href || path === href + "/" ? "page" : 
           </div>
           <div>
             <h4>Free tools</h4>
+            <a href="/#features">Features</a>
             <a href="/free-invoice-generator/">Invoice generator</a>
             <a href="/free-quotation-generator/">Quotation generator</a>
             <a href="/blog/">Freelance blog</a>

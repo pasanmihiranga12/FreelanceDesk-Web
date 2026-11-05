@@ -241,3 +241,12 @@ h1 em, h2 em, h3 em, .serif-em { font-family: var(--serif); font-style: italic; 
 
 .skip { position: fixed; left: 12px; top: -60px; z-index: 10000; background: #fff; color: #0a1433; padding: 12px 18px; border-radius: 12px; font-weight: 600; text-decoration: none; transition: top .15s ease; }
 .skip:focus { top: 12px; }
+
+/* nav labels never wrap; on mid-size screens the links tighten up so the extra Features link fits */
+.nav-links a { white-space: nowrap; }
+@media (min-width: 881px) and (max-width: 1180px) {
+  .nav-links a:not(.btn):not(.nav-cta) { padding: 10px 9px; font-size: .88rem; }
+  .nav-links a:not(.btn):not(.nav-cta)::after { left: 9px; right: 9px; }
+  .nav-links a.nav-cta { padding: 11px 14px; }
+  .nav-links a.signin-link { margin-left: 2px; }
+}
