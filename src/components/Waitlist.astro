@@ -10,6 +10,10 @@ const { id = "wl", dark = false } = Astro.props;
   </form>
   <p class="wl-msg" data-wl-msg role="status" aria-live="polite"></p>
   <p class="wl-note">We'll email you when the App Store version is ready. <a href="/privacy/">Privacy</a></p>
+  <div class="wl-done" data-wl-done hidden>
+    <span class="wl-tick" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>
+    <div><b>You're on the list.</b><p>We'll email you as soon as the App Store version is ready.</p></div>
+  </div>
 </div>
 
 <script>
@@ -18,10 +22,16 @@ const { id = "wl", dark = false } = Astro.props;
   document.querySelectorAll<HTMLFormElement>("form[data-wl]").forEach((form) => {
     const box = form.closest(".wl-box") as HTMLElement;
     const msg = box.querySelector("[data-wl-msg]") as HTMLElement | null;
+    const done = box.querySelector("[data-wl-done]") as HTMLElement;
+    const finish = () => {   // swap the form for the thank-you card
+      form.hidden = true; if (msg) msg.hidden = true;
+      (box.querySelector(".wl-note") as HTMLElement).hidden = true;
+      done.hidden = false;
+    };
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       const f = new FormData(form);
-      if (String(f.get("website") || "")) { say(msg, "You're on the list. Thank you!", "ok"); return; }   // bots fill the hidden field
+      if (String(f.get("website") || "")) { finish(); return; }   // bots fill the hidden field
       const email = String(f.get("email") || "").trim();
       if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { say(msg, "Please enter a valid email address.", "err"); return; }
       if (!supabase) { say(msg, "The waitlist isn't connected yet. Please try again later.", "err"); return; }
@@ -32,7 +42,7 @@ const { id = "wl", dark = false } = Astro.props;
       if (error || data === "busy") { say(msg, "Something went wrong. Please try again in a minute.", "err"); return; }
       if (data === "invalid") { say(msg, "Please enter a valid email address.", "err"); return; }
       form.reset();
-      say(msg, "You're on the list. We'll email you when the App Store version is ready.", "ok");
+      finish();
     });
   });
 </script>
@@ -46,10 +56,12 @@ const { id = "wl", dark = false } = Astro.props;
   .wl-hp { position: absolute !important; left: -9999px; width: 1px; height: 1px; opacity: 0; }
   .wl-msg { min-height: 0; margin-top: 14px; font-size: 1.02rem; font-weight: 500; line-height: 1.4; color: #fff; }
   .wl-msg:empty { display: none; }
-  .wl-msg[data-tone] { padding: 14px 18px; border-radius: 14px; }
-  .wl-msg[data-tone="ok"] { background: #fff; color: #0a1433; box-shadow: 0 10px 28px rgba(0,10,60,.25); }
-  .wl-msg[data-tone="ok"]::before { content: "¹3"; display: inline-grid; place-items: center; width: 22px; height: 22px; margin-right: 10px; border-radius: 50%; background: #16a34a; color: #fff; font-size: .8rem; font-weight: 700; vertical-align: 1px; }
-  .wl-msg[data-tone="err"] { background: #fff1f2; color: #9f1239; }
+  .wl-msg[data-tone="err"] { padding: 14px 18px; border-radius: 14px; background: #fff1f2; color: #9f1239; }
   .wl-note { margin-top: 12px; font-size: .88rem; color: rgba(255,255,255,.92); }
+  .wl-done { display: flex; align-items: center; gap: 18px; padding: 22px 24px; border-radius: 20px; background: #fff; color: #0a1433; box-shadow: 0 18px 44px rgba(0,10,60,.3); }
+  .wl-done[hidden], .wl-form[hidden], .wl-msg[hidden], .wl-note[hidden] { display: none; }
+  .wl-done b { display: block; font-size: 1.25rem; font-weight: 600; letter-spacing: -.02em; }
+  .wl-done p { margin-top: 4px; color: #3f4c6e; font-size: 1rem; line-height: 1.4; }
+  .wl-tick { flex: none; display: grid; place-items: center; width: 46px; height: 46px; border-radius: 50%; background: #16a34a; color: #fff; }
   .wl-note a { color: #fff; }
 </style>
