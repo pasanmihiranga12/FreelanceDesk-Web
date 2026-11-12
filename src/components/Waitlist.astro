@@ -44,8 +44,12 @@ const { id = "wl", dark = false } = Astro.props;
   .wl-form input[type=email]:focus { outline: none; border-color: #ffd05a; }
   .wl-form .btn { border-radius: 14px; padding: 16px 28px; }
   .wl-hp { position: absolute !important; left: -9999px; width: 1px; height: 1px; opacity: 0; }
-  .wl-msg { min-height: 1.4em; margin-top: 12px; font-size: .95rem; color: #fff; }
-  .wl-msg[data-tone="ok"] { color: #8ff0c8; } .wl-msg[data-tone="err"] { color: #ffb3bd; }
-  .wl-note { margin-top: 4px; font-size: .84rem; color: rgba(255,255,255,.72); }
+  .wl-msg { min-height: 0; margin-top: 14px; font-size: 1.02rem; font-weight: 500; line-height: 1.4; color: #fff; }
+  .wl-msg:empty { display: none; }
+  .wl-msg[data-tone] { padding: 14px 18px; border-radius: 14px; }
+  .wl-msg[data-tone="ok"] { background: #fff; color: #0a1433; box-shadow: 0 10px 28px rgba(0,10,60,.25); }
+  .wl-msg[data-tone="ok"]::before { content: "¹3"; display: inline-grid; place-items: center; width: 22px; height: 22px; margin-right: 10px; border-radius: 50%; background: #16a34a; color: #fff; font-size: .8rem; font-weight: 700; vertical-align: 1px; }
+  .wl-msg[data-tone="err"] { background: #fff1f2; color: #9f1239; }
+  .wl-note { margin-top: 12px; font-size: .88rem; color: rgba(255,255,255,.92); }
   .wl-note a { color: #fff; }
 </style>
